@@ -1,54 +1,90 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
+import '../../core/theme/app_border_radius.dart';
+import '../../core/theme/app_spacing.dart';
 
+/// NicheSphere — Pastel Bubble Widget (Section 7.3)
+/// Used for interest tags, category chips, etc.
 class PastelBubble extends StatelessWidget {
   final String label;
-  final Color color;
+  final String? emoji;
   final bool isSelected;
-  final VoidCallback onTap;
+  final Color? selectedColor;
+  final Color? unselectedColor;
+  final VoidCallback? onTap;
+  final double? fontSize;
 
   const PastelBubble({
     super.key,
     required this.label,
-    required this.color,
-    required this.isSelected,
-    required this.onTap,
+    this.emoji,
+    this.isSelected = false,
+    this.selectedColor,
+    this.unselectedColor,
+    this.onTap,
+    this.fontSize,
   });
 
   @override
   Widget build(BuildContext context) {
+    final neonColor = selectedColor ?? AppColors.neonPink;
+    final pastelColor = unselectedColor ?? AppColors.bubblePink;
+
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md16,
+          vertical: AppSpacing.xs8,
+        ),
         decoration: BoxDecoration(
-          color: isSelected ? color : color.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(30),
+          color: isSelected
+              ? neonColor.withOpacity(0.18)
+              : pastelColor.withOpacity(0.6),
+          borderRadius: AppBorderRadius.pill,
           border: Border.all(
-            color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
-            width: 2,
+            color: isSelected
+                ? neonColor.withOpacity(0.8)
+                : Colors.white.withOpacity(0.5),
+            width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: color.withOpacity(0.4),
-                    blurRadius: 10,
+                    color: neonColor.withOpacity(0.35),
+                    blurRadius: 16,
                     spreadRadius: 2,
-                  )
+                    offset: const Offset(0, 2),
+                  ),
                 ]
-              : [],
+              : null,
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.black87 : Colors.black54,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
+        transform: isSelected
+            ? Matrix4.diagonal3Values(1.08, 1.08, 1.0)
+            : Matrix4.identity(),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (emoji != null) ...[
+              Text(emoji!, style: TextStyle(fontSize: fontSize ?? 14)),
+              const SizedBox(width: AppSpacing.xs4),
+            ],
+            Text(
+              label,
+              style: (fontSize != null
+                      ? AppTextStyles.label.copyWith(fontSize: fontSize)
+                      : AppTextStyles.label)
+                  .copyWith(
+                color: isSelected ? neonColor : AppColors.textPrimary,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ],
         ),
-      )
-          .animate(target: isSelected ? 1 : 0)
-          .scale(begin: const Offset(1, 1), end: const Offset(1.1, 1.1), duration: 200.ms)
-          .shimmer(delay: 400.ms, duration: 1000.ms, color: Colors.white24),
+      ),
     );
   }
 }

@@ -1,50 +1,73 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'colors.dart';
+import 'app_colors.dart';
 
+/// NicheSphere App Theme
 class AppTheme {
+  AppTheme._();
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primaryPastel,
-        primary: AppColors.primaryPastel,
-        secondary: AppColors.secondaryPastel,
-        surface: AppColors.surfacePastel,
-        background: AppColors.backgroundPastel,
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: AppColors.bgPrimary,
+      colorScheme: ColorScheme.light(
+        primary: AppColors.neonPink,
+        secondary: AppColors.neonPurple,
+        surface: AppColors.bgPrimary,
+        error: AppColors.error,
+        onPrimary: AppColors.textOnDark,
+        onSecondary: AppColors.textOnDark,
+        onSurface: AppColors.textPrimary,
+        onError: AppColors.textOnDark,
       ),
-      textTheme: GoogleFonts.outfitTextTheme().copyWith(
-        displayLarge: GoogleFonts.outfit(
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textMain,
-        ),
-        titleLarge: GoogleFonts.outfit(
-          fontSize: 22,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textMain,
-        ),
-        bodyLarge: GoogleFonts.outfit(
-          fontSize: 16,
-          color: AppColors.textMain,
-        ),
-        bodyMedium: GoogleFonts.outfit(
-          fontSize: 14,
-          color: AppColors.textSecondary,
-        ),
-      ),
-      cardTheme: CardTheme(
+      textTheme: GoogleFonts.outfitTextTheme(),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        iconTheme: IconThemeData(color: AppColors.textPrimary),
+        titleTextStyle: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
         ),
-        color: AppColors.glassWhite(0.7),
       ),
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: AppColors.secondaryPastel,
-        foregroundColor: AppColors.textMain,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.neonPink,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(999),
+          ),
+          textStyle: GoogleFonts.outfit(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.6),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.neonPink, width: 1.5),
+        ),
+        hintStyle: GoogleFonts.outfit(
+          color: AppColors.textHint,
+          fontSize: 14,
         ),
       ),
     );

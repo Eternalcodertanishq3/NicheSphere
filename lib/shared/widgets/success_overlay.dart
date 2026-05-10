@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
 
+/// NicheSphere — Success Overlay (Lottie confetti alternative)
 class SuccessOverlay extends StatefulWidget {
-  final VoidCallback onCompleted;
-  final bool showConfettiAfter;
-  final double size;
+  final String message;
+  final VoidCallback onDismiss;
 
   const SuccessOverlay({
-    required this.onCompleted,
-    this.showConfettiAfter = false,
-    this.size = 160,
     super.key,
+    required this.message,
+    required this.onDismiss,
   });
 
   @override
@@ -19,25 +19,25 @@ class SuccessOverlay extends StatefulWidget {
 
 class _SuccessOverlayState extends State<SuccessOverlay>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  bool _playedConfetti = false;
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _opacityAnimation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this);
-    _controller.addStatusListener((status) async {
-      if (status == AnimationStatus.completed) {
-        if (widget.showConfettiAfter && !_playedConfetti) {
-          setState(() => _playedConfetti = true);
-          // small delay so confetti feels like a follow-up
-          await Future.delayed(const Duration(milliseconds: 220));
-          // keep confetti looping briefly then finish
-          await Future.delayed(const Duration(milliseconds: 900));
-        }
-        widget.onCompleted();
-      }
-    });
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
+    );
+    _opacityAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
+    );
+    _controller.forward();
+    Future.delayed(const Duration(seconds: 2), widget.onDismiss);
   }
 
   @override
@@ -46,65 +46,60 @@ class _SuccessOverlayState extends State<SuccessOverlay>
     super.dispose();
   }
 
-  Widget _buildFallbackIcon(BuildContext context) {
-    final color = Theme.of(context).colorScheme.primary;
-    return Container(
-      width: widget.size,
-      height: widget.size,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        shape: BoxShape.circle,
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 12)],
-      ),
-      child: Icon(Icons.check_rounded, size: widget.size * 0.5, color: color),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // dim background
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () {}, // block touches while overlay is visible
-              child: Container(color: Colors.black26),
-            ),
-          ),
-          // main animation container
-          SizedBox(
-            width: widget.size,
-            height: widget.size,
-            child: Lottie.asset(
-              'assets/animations/success_check.json',
-              controller: _controller,
-              onLoaded: (composition) {
-                _controller
-                  ..duration = composition.duration
-                  ..forward();
-              },
-              errorBuilder: (_, __, ___) => _buildFallbackIcon(context),
-            ),
-          ),
-          // optional confetti overlay
-          if (_playedConfetti)
-            Positioned(
-              top: 0,
-              child: SizedBox(
-                width: widget.size * 2.0,
-                height: widget.size * 2.0,
-                child: Lottie.asset(
-                  'assets/animations/confetti_burst.json',
-                  repeat: false,
-                  onLoaded: (_) {},
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) => Opacity(
+        opacity: _opacityAnimation.value,
+        child: Transform.scale(
+          scale: _scaleAnimation.value,
+          child: child,
+        ),
+      ),
+      child: Container(
+        color: Colors.black54,
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.all(40),
+            margin: const EdgeInsets.all(40),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(32),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.success.withOpacity(0.3),
+                  blurRadius: 30,
+                  spreadRadius: 5,
                 ),
-              ),
+              ],
             ),
-        ],
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check_rounded,
+                    color: AppColors.success,
+                    size: 48,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  widget.message,
+                  style: AppTextStyles.titleL,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

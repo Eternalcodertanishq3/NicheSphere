@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'core/router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/router/app_router.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize Hive
-  await Hive.initFlutter();
-  await Hive.openBox('settings');
-  
-  // Firebase initialization would go here
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Set status bar to transparent for immersive gradient backgrounds
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark,
+    systemNavigationBarColor: Colors.transparent,
+  ));
 
   runApp(
     const ProviderScope(
@@ -21,6 +21,7 @@ void main() async {
   );
 }
 
+/// NicheSphere — Hyperlocal Micro-Community Event Discovery
 class NicheSphereApp extends StatelessWidget {
   const NicheSphereApp({super.key});
 
@@ -30,7 +31,7 @@ class NicheSphereApp extends StatelessWidget {
       title: 'NicheSphere',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      routerConfig: router,
+      routerConfig: AppRouter.router,
     );
   }
 }
