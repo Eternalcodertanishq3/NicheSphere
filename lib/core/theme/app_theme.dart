@@ -11,7 +11,7 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.bgPrimary,
-      colorScheme: ColorScheme.light(
+      colorScheme: const ColorScheme.light(
         primary: AppColors.neonPink,
         secondary: AppColors.neonPurple,
         surface: AppColors.bgPrimary,

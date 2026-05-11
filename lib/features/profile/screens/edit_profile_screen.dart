@@ -38,8 +38,8 @@ class EditProfileScreen extends StatelessWidget {
                   Stack(alignment: Alignment.bottomRight, children: [
                     AvatarWidget(imageUrl: user.avatarUrl, size: 100),
                     Container(width: 32, height: 32,
-                      decoration: BoxDecoration(shape: BoxShape.circle,
-                        gradient: const LinearGradient(colors: [AppColors.neonPink, AppColors.neonPurple])),
+                      decoration: const BoxDecoration(shape: BoxShape.circle,
+                        gradient: LinearGradient(colors: [AppColors.neonPink, AppColors.neonPurple])),
                       child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 16)),
                   ]),
                   const SizedBox(height: AppSpacing.lg24),

@@ -8,7 +8,6 @@ import '../../../core/theme/app_border_radius.dart';
 import '../../../core/router/route_names.dart';
 import '../../../shared/widgets/gradient_background.dart';
 import '../../../shared/widgets/glass_card.dart';
-import '../../../shared/widgets/avatar_widget.dart';
 
 /// NicheSphere — Notifications Screen (Screen 16)
 class NotificationsScreen extends StatelessWidget {

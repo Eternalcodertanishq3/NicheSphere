@@ -12,7 +12,6 @@ import '../../../core/constants/mock_data.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/avatar_widget.dart';
-import '../../../data/models/event_model.dart';
 
 /// NicheSphere — Event Details Screen (Screen 9)
 class EventDetailsScreen extends StatelessWidget {

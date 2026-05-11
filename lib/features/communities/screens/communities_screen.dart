@@ -60,7 +60,7 @@ class CommunitiesScreen extends StatelessWidget {
                         Text(c.description, style: AppTextStyles.bodyS, maxLines: 1, overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 4),
                         Row(children: [
-                          Icon(Icons.people_outline_rounded, size: 14, color: AppColors.textSecondary),
+                          const Icon(Icons.people_outline_rounded, size: 14, color: AppColors.textSecondary),
                           const SizedBox(width: 4),
                           Text('${c.memberCount} members', style: AppTextStyles.micro),
                         ]),

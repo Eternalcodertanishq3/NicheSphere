@@ -8,7 +8,6 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_border_radius.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/router/route_names.dart';
-import '../../../shared/widgets/gradient_background.dart';
 import '../../../shared/widgets/app_button.dart';
 
 /// NicheSphere — Interest Selector Screen (Screen 3)
@@ -44,7 +43,7 @@ class _InterestSelectorScreenState extends State<InterestSelectorScreen> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final interests = AppConstants.interests;
+    const interests = AppConstants.interests;
 
     return Scaffold(
       body: Container(

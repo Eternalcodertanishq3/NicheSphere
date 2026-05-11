@@ -111,18 +111,18 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: () => context.go(RouteNames.explore),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md16, vertical: AppSpacing.sm12),
         child: Row(children: [
-          Icon(Icons.search_rounded, color: AppColors.textHint, size: 20),
+          const Icon(Icons.search_rounded, color: AppColors.textHint, size: 20),
           const SizedBox(width: AppSpacing.xs8),
           Text('Search events, communities...', style: AppTextStyles.bodyM.copyWith(color: AppColors.textHint)),
           const Spacer(),
-          Icon(Icons.tune_rounded, color: AppColors.textSecondary, size: 20),
+          const Icon(Icons.tune_rounded, color: AppColors.textSecondary, size: 20),
         ]),
       ),
     ).animate().fadeIn(delay: 100.ms, duration: 400.ms);
   }
 
   Widget _buildCategoryChips() {
-    final cats = AppConstants.categories;
+    const cats = AppConstants.categories;
     return SizedBox(
       height: 50,
       child: ListView.separated(
@@ -305,13 +305,13 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(event.title, style: AppTextStyles.titleM, maxLines: 1, overflow: TextOverflow.ellipsis),
             const SizedBox(height: 4),
             Row(children: [
-              Icon(Icons.calendar_today_outlined, size: 12, color: AppColors.textSecondary),
+              const Icon(Icons.calendar_today_outlined, size: 12, color: AppColors.textSecondary),
               const SizedBox(width: 4),
               Text(DateFormat('MMM dd, h:mm a').format(event.startAt), style: AppTextStyles.bodyS),
             ]),
             const SizedBox(height: 2),
             Row(children: [
-              Icon(Icons.people_outline_rounded, size: 12, color: AppColors.textSecondary),
+              const Icon(Icons.people_outline_rounded, size: 12, color: AppColors.textSecondary),
               const SizedBox(width: 4),
               Text('${event.attendeeCount} going', style: AppTextStyles.bodyS),
               const Spacer(),

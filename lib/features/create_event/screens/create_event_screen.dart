@@ -116,7 +116,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       GlassCard(blur: 10, opacity: 0.15, borderRadius: AppBorderRadius.xl,
         padding: const EdgeInsets.all(AppSpacing.xl40),
         child: Column(children: [
-          Icon(Icons.add_photo_alternate_outlined, size: 48, color: AppColors.textHint),
+          const Icon(Icons.add_photo_alternate_outlined, size: 48, color: AppColors.textHint),
           const SizedBox(height: 8),
           Text('Add Cover Image', style: AppTextStyles.bodyM.copyWith(color: AppColors.textSecondary)),
         ])),

@@ -49,8 +49,8 @@ class RegisterScreen extends StatelessWidget {
                 const SizedBox(height: AppSpacing.lg24),
                 TextButton(
                   onPressed: () => context.go(RouteNames.login),
-                  child: RichText(text: TextSpan(style: AppTextStyles.bodyM, children: [
-                    const TextSpan(text: 'Already have an account? ', style: TextStyle(color: AppColors.textSecondary)),
+                  child: RichText(text: TextSpan(style: AppTextStyles.bodyM, children: const [
+                    TextSpan(text: 'Already have an account? ', style: TextStyle(color: AppColors.textSecondary)),
                     TextSpan(text: 'Sign In', style: TextStyle(color: AppColors.neonPink, fontWeight: FontWeight.w600)),
                   ])),
                 ),

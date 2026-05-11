@@ -86,8 +86,8 @@ class LoginScreen extends StatelessWidget {
                 const SizedBox(height: AppSpacing.lg32),
                 TextButton(
                   onPressed: () => context.go(RouteNames.register),
-                  child: RichText(text: TextSpan(style: AppTextStyles.bodyM, children: [
-                    const TextSpan(text: 'New to NicheSphere? ', style: TextStyle(color: AppColors.textSecondary)),
+                  child: RichText(text: TextSpan(style: AppTextStyles.bodyM, children: const [
+                    TextSpan(text: 'New to NicheSphere? ', style: TextStyle(color: AppColors.textSecondary)),
                     TextSpan(text: 'Sign Up', style: TextStyle(color: AppColors.neonPink, fontWeight: FontWeight.w600)),
                   ])),
                 ),
