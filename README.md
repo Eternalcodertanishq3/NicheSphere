@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/nichesphere/assets/main/logo.png" width="120" height="120" alt="NicheSphere Logo" />
+<img src="./logo.png" width="120" height="120" alt="NicheSphere Logo" />
 
 # NicheSphere
 
@@ -24,11 +24,7 @@
 
 <br />
 
-<img src="https://raw.githubusercontent.com/nichesphere/assets/main/hero-banner.png" width="100%" alt="NicheSphere App Screenshots" />
-
-<br />
-
-[**Live Demo**](https://nichesphere.app) · [**Documentation**](./docs) · [**Report a Bug**](https://github.com/nichesphere/nichesphere/issues/new?template=bug_report.md) · [**Request a Feature**](https://github.com/nichesphere/nichesphere/issues/new?template=feature_request.md)
+[**Live Demo**](https://nichesphere.app) · [**Documentation**](./docs) · [**Report a Bug**](https://github.com/Eternalcodertanishq3/NicheSphere/issues/new) · [**Request a Feature**](https://github.com/Eternalcodertanishq3/NicheSphere/issues/new)
 
 </div>
 
