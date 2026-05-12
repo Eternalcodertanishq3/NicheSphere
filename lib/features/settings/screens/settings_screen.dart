@@ -76,7 +76,7 @@ class SettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(children: [
           Container(width: 36, height: 36,
-            decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: AppBorderRadius.xs),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: AppBorderRadius.xs),
             child: Icon(icon, color: color, size: 20)),
           const SizedBox(width: AppSpacing.sm12),
           Expanded(child: Text(label, style: AppTextStyles.bodyM)),

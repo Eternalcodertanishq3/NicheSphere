@@ -52,7 +52,7 @@ class NotificationsScreen extends StatelessWidget {
                   return Dismissible(
                     key: ValueKey(i),
                     background: Container(
-                      decoration: BoxDecoration(color: AppColors.error.withOpacity(0.2), borderRadius: AppBorderRadius.lg),
+                      decoration: BoxDecoration(color: AppColors.error.withValues(alpha: 0.2), borderRadius: AppBorderRadius.lg),
                       alignment: Alignment.centerRight,
                       padding: const EdgeInsets.only(right: 20),
                       child: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
@@ -62,7 +62,7 @@ class NotificationsScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(AppSpacing.sm12),
                       child: Row(children: [
                         Container(width: 40, height: 40,
-                          decoration: BoxDecoration(shape: BoxShape.circle, color: (n['color'] as Color).withOpacity(0.15)),
+                          decoration: BoxDecoration(shape: BoxShape.circle, color: (n['color'] as Color).withValues(alpha: 0.15)),
                           child: Icon(n['icon'] as IconData, color: n['color'] as Color, size: 20)),
                         const SizedBox(width: AppSpacing.sm12),
                         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

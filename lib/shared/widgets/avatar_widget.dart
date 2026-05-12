@@ -25,12 +25,12 @@ class AvatarWidget extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: borderColor ?? Colors.white.withOpacity(0.6),
+          color: borderColor ?? Colors.white.withValues(alpha: 0.6),
           width: borderWidth,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.neonPurple.withOpacity(0.1),
+            color: AppColors.neonPurple.withValues(alpha: 0.1),
             blurRadius: 8,
           ),
         ],
@@ -41,7 +41,7 @@ class AvatarWidget extends StatelessWidget {
                 imageUrl: imageUrl!,
                 fit: BoxFit.cover,
                 placeholder: (_, __) => Container(
-                  color: AppColors.gradEnd.withOpacity(0.3),
+                  color: AppColors.gradEnd.withValues(alpha: 0.3),
                   child: Icon(
                     Icons.person_rounded,
                     size: size * 0.5,
@@ -57,11 +57,11 @@ class AvatarWidget extends StatelessWidget {
 
   Widget _defaultAvatar() {
     return Container(
-      color: AppColors.gradEnd.withOpacity(0.3),
+      color: AppColors.gradEnd.withValues(alpha: 0.3),
       child: Icon(
         Icons.person_rounded,
         size: size * 0.5,
-        color: AppColors.neonPurple.withOpacity(0.5),
+        color: AppColors.neonPurple.withValues(alpha: 0.5),
       ),
     );
   }

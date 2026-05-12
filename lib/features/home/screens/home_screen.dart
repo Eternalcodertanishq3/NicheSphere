@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
@@ -8,23 +9,28 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_border_radius.dart';
 import '../../../core/constants/app_constants.dart';
-import '../../../core/constants/mock_data.dart';
 import '../../../core/router/route_names.dart';
 import '../../../shared/widgets/gradient_background.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/app_bottom_nav.dart';
 import '../../../shared/widgets/avatar_widget.dart';
+import '../../../shared/widgets/loading_shimmer.dart';
+import '../../../shared/widgets/glass_empty_state.dart';
 import '../../../data/models/event_model.dart';
+import '../../../data/models/community_model.dart';
+import '../providers/home_provider.dart';
+import '../../profile/providers/profile_provider.dart';
 import 'package:intl/intl.dart';
 
 /// NicheSphere — Home Screen "Discover" (Screen 7)
-class HomeScreen extends StatefulWidget {
+/// Wired to real Firestore data via Riverpod providers.
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _navIndex = 0;
   int _selectedCategory = 0;
 
@@ -40,6 +46,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final featuredAsync = ref.watch(featuredEventsProvider);
+    final nearbyAsync = ref.watch(nearbyEventsProvider);
+    final communitiesAsync = ref.watch(popularCommunitiesProvider);
+    final currentUserAsync = ref.watch(currentUserProvider);
+
     return Scaffold(
       body: Stack(
         children: [
@@ -48,20 +59,15 @@ class _HomeScreenState extends State<HomeScreen> {
               bottom: false,
               child: CustomScrollView(
                 slivers: [
-                  SliverToBoxAdapter(child: _buildHeader()),
+                  SliverToBoxAdapter(child: _buildHeader(currentUserAsync)),
                   SliverToBoxAdapter(child: _buildSearchBar()),
                   SliverToBoxAdapter(child: _buildCategoryChips()),
                   SliverToBoxAdapter(child: _buildSectionHeader('Featured Events', 'See All')),
-                  SliverToBoxAdapter(child: _buildFeaturedCarousel()),
+                  SliverToBoxAdapter(child: _buildFeaturedCarousel(featuredAsync)),
                   SliverToBoxAdapter(child: _buildSectionHeader('Popular Spheres', 'See All')),
-                  SliverToBoxAdapter(child: _buildPopularSpheres()),
+                  SliverToBoxAdapter(child: _buildPopularSpheres(communitiesAsync)),
                   SliverToBoxAdapter(child: _buildSectionHeader('Upcoming Near You', 'See All')),
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (ctx, i) => _buildUpcomingTile(MockData.upcomingEvents[i], i),
-                      childCount: MockData.upcomingEvents.length,
-                    ),
-                  ),
+                  _buildUpcomingList(nearbyAsync),
                   const SliverToBoxAdapter(child: SizedBox(height: 120)),
                 ],
               ),
@@ -73,7 +79,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(AsyncValue<dynamic> userAsync) {
+    final userName = userAsync.value?.location ?? 'San Francisco, CA';
+    final avatarUrl = userAsync.value?.avatarUrl;
     return Padding(
       padding: const EdgeInsets.fromLTRB(AppSpacing.lg24, AppSpacing.md16, AppSpacing.lg24, 0),
       child: Row(
@@ -90,13 +98,13 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(children: [
                 const Icon(Icons.location_on_rounded, size: 14, color: AppColors.textSecondary),
                 const SizedBox(width: 4),
-                Text('San Francisco, CA', style: AppTextStyles.bodyS),
+                Text(userName, style: AppTextStyles.bodyS),
               ]),
             ]),
           ),
           GestureDetector(
             onTap: () => context.go(RouteNames.profile),
-            child: const AvatarWidget(imageUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100', size: 44),
+            child: AvatarWidget(imageUrl: avatarUrl, size: 44),
           ),
         ],
       ),
@@ -140,10 +148,10 @@ class _HomeScreenState extends State<HomeScreen> {
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: isActive ? neonColor.withOpacity(0.18) : Colors.white.withOpacity(0.5),
+                color: isActive ? neonColor.withValues(alpha: 0.18) : Colors.white.withValues(alpha: 0.5),
                 borderRadius: AppBorderRadius.pill,
-                border: Border.all(color: isActive ? neonColor.withOpacity(0.6) : Colors.white.withOpacity(0.4), width: 1.5),
-                boxShadow: isActive ? [BoxShadow(color: neonColor.withOpacity(0.25), blurRadius: 12)] : null,
+                border: Border.all(color: isActive ? neonColor.withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.4), width: 1.5),
+                boxShadow: isActive ? [BoxShadow(color: neonColor.withValues(alpha: 0.25), blurRadius: 12)] : null,
               ),
               child: Row(mainAxisSize: MainAxisSize.min, children: [
                 Text(cat['emoji']!, style: const TextStyle(fontSize: 14)),
@@ -169,15 +177,45 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildFeaturedCarousel() {
-    return SizedBox(
-      height: 380,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg24),
-        itemCount: MockData.featuredEvents.length,
-        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.md16),
-        itemBuilder: (_, i) => _buildFeaturedCard(MockData.featuredEvents[i], i),
+  Widget _buildFeaturedCarousel(AsyncValue<List<EventModel>> async) {
+    return async.when(
+      data: (events) {
+        if (events.isEmpty) {
+          return const SizedBox(
+            height: 200,
+            child: Center(child: Text('No featured events yet')),
+          );
+        }
+        return SizedBox(
+          height: 380,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg24),
+            itemCount: events.length,
+            separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.md16),
+            itemBuilder: (_, i) => _buildFeaturedCard(events[i], i),
+          ),
+        );
+      },
+      loading: () => const SizedBox(
+        height: 380,
+        child: LoadingShimmer(),
+      ),
+      error: (e, _) => SizedBox(
+        height: 200,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Failed to load events', style: AppTextStyles.bodyM),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () => ref.invalidate(featuredEventsProvider),
+                child: Text('Retry', style: AppTextStyles.label.copyWith(color: AppColors.neonPink)),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -193,20 +231,20 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Stack(children: [
             Positioned.fill(
               child: CachedNetworkImage(imageUrl: event.imageUrl, fit: BoxFit.cover,
-                placeholder: (_, __) => Container(color: AppColors.gradEnd.withOpacity(0.3)),
+                placeholder: (_, __) => Container(color: AppColors.gradEnd.withValues(alpha: 0.3)),
                 errorWidget: (_, __, ___) => Container(color: AppColors.gradEnd, child: const Icon(Icons.image, size: 40, color: AppColors.textHint))),
             ),
             Positioned.fill(
               child: DecoratedBox(decoration: BoxDecoration(
                 gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black.withOpacity(0.7)], stops: const [0.4, 1.0]),
+                  colors: [Colors.transparent, Colors.black.withValues(alpha: 0.7)], stops: const [0.4, 1.0]),
               )),
             ),
             // Category badge
             Positioned(top: 12, left: 12,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(color: neon.withOpacity(0.9), borderRadius: AppBorderRadius.xs),
+                decoration: BoxDecoration(color: neon.withValues(alpha: 0.9), borderRadius: AppBorderRadius.xs),
                 child: Text(event.category, style: AppTextStyles.micro.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
               ),
             ),
@@ -215,7 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ClipOval(
                 child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                   child: Container(width: 36, height: 36,
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withOpacity(0.2)),
+                    decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.2)),
                     child: const Icon(Icons.favorite_border_rounded, color: Colors.white, size: 18),
                   ),
                 ),
@@ -227,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
                   child: Container(
                     padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.1)),
+                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.1)),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
                       Text(event.title, style: AppTextStyles.titleM.copyWith(color: Colors.white), maxLines: 2, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 6),
@@ -258,30 +296,78 @@ class _HomeScreenState extends State<HomeScreen> {
      .slideX(begin: 0.1, end: 0, duration: 400.ms);
   }
 
-  Widget _buildPopularSpheres() {
+  Widget _buildPopularSpheres(AsyncValue<List<CommunityModel>> async) {
     final emojis = ['💪', '🎮', '🎨', '💻', '🍳'];
-    return SizedBox(
-      height: 48,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg24),
-        itemCount: MockData.communities.length,
-        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.xs8),
-        itemBuilder: (_, i) {
-          final c = MockData.communities[i];
-          return GlassCard(
-            blur: 10, opacity: 0.2, borderRadius: AppBorderRadius.pill,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            onTap: () {},
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              Text(emojis[i % emojis.length], style: const TextStyle(fontSize: 16)),
-              const SizedBox(width: 6),
-              Text(c.name, style: AppTextStyles.label),
-              const SizedBox(width: 4),
-              Text('${c.memberCount}', style: AppTextStyles.micro.copyWith(color: AppColors.textHint)),
-            ]),
-          ).animate().fadeIn(delay: Duration(milliseconds: 50 * i), duration: 300.ms);
-        },
+    return async.when(
+      data: (communities) {
+        if (communities.isEmpty) {
+          return const SizedBox(height: 48, child: Center(child: Text('No communities yet')));
+        }
+        return SizedBox(
+          height: 48,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg24),
+            itemCount: communities.length,
+            separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.xs8),
+            itemBuilder: (_, i) {
+              final c = communities[i];
+              return GlassCard(
+                blur: 10, opacity: 0.2, borderRadius: AppBorderRadius.pill,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                onTap: () {},
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Text(emojis[i % emojis.length], style: const TextStyle(fontSize: 16)),
+                  const SizedBox(width: 6),
+                  Text(c.name, style: AppTextStyles.label),
+                  const SizedBox(width: 4),
+                  Text('${c.memberCount}', style: AppTextStyles.micro.copyWith(color: AppColors.textHint)),
+                ]),
+              ).animate().fadeIn(delay: Duration(milliseconds: 50 * i), duration: 300.ms);
+            },
+          ),
+        );
+      },
+      loading: () => const SizedBox(height: 48, child: LoadingShimmer()),
+      error: (_, __) => const SizedBox(height: 48),
+    );
+  }
+
+  Widget _buildUpcomingList(AsyncValue<List<EventModel>> async) {
+    return async.when(
+      data: (events) {
+        if (events.isEmpty) {
+          return SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg24, vertical: AppSpacing.lg24),
+              child: GlassEmptyState(
+                title: 'No Events Here Yet',
+                message: 'Be the pioneer! Host the first event in this Sphere and bring the community together.',
+                icon: Icons.explore_rounded,
+                buttonText: 'Host the first event!',
+                onButtonPressed: () => context.go(RouteNames.createEvent),
+              ),
+            ),
+          );
+        }
+        return SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (ctx, i) => _buildUpcomingTile(events[i], i),
+            childCount: events.length,
+          ),
+        );
+      },
+      loading: () => const SliverToBoxAdapter(child: LoadingShimmer()),
+      error: (e, _) => SliverToBoxAdapter(
+        child: SizedBox(
+          height: 100,
+          child: Center(
+            child: GestureDetector(
+              onTap: () => ref.invalidate(nearbyEventsProvider),
+              child: Text('Retry loading events', style: AppTextStyles.label.copyWith(color: AppColors.neonPink)),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -297,7 +383,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ClipRRect(
             borderRadius: AppBorderRadius.sm,
             child: CachedNetworkImage(imageUrl: event.imageUrl, width: 72, height: 72, fit: BoxFit.cover,
-              placeholder: (_, __) => Container(width: 72, height: 72, color: AppColors.gradEnd.withOpacity(0.3)),
+              placeholder: (_, __) => Container(width: 72, height: 72, color: AppColors.gradEnd.withValues(alpha: 0.3)),
               errorWidget: (_, __, ___) => Container(width: 72, height: 72, color: AppColors.gradEnd)),
           ),
           const SizedBox(width: AppSpacing.sm12),

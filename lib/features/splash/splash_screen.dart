@@ -74,10 +74,10 @@ class _SplashScreenState extends State<SplashScreen>
                 height: orbSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: colors[i % colors.length].withOpacity(0.4),
+                  color: colors[i % colors.length].withValues(alpha: 0.4),
                   boxShadow: [
                     BoxShadow(
-                      color: colors[i % colors.length].withOpacity(0.3),
+                      color: colors[i % colors.length].withValues(alpha: 0.3),
                       blurRadius: 30,
                       spreadRadius: 10,
                     ),
@@ -118,7 +118,7 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.neonPink.withOpacity(0.4),
+                        color: AppColors.neonPink.withValues(alpha: 0.4),
                         blurRadius: 40,
                         spreadRadius: 10,
                       ),

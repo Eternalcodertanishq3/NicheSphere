@@ -96,15 +96,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               shape: BoxShape.circle,
                               gradient: LinearGradient(
                                 colors: [
-                                  slide.color.withOpacity(0.2),
-                                  slide.color.withOpacity(0.05),
+                                  slide.color.withValues(alpha: 0.2),
+                                  slide.color.withValues(alpha: 0.05),
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: slide.color.withOpacity(0.2),
+                                  color: slide.color.withValues(alpha: 0.2),
                                   blurRadius: 40,
                                   spreadRadius: 10,
                                 ),

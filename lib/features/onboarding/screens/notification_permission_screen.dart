@@ -28,7 +28,7 @@ class NotificationPermissionScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(colors: [AppColors.neonOrange, AppColors.neonPink]),
-                    boxShadow: [BoxShadow(color: AppColors.neonOrange.withOpacity(0.3), blurRadius: 20, spreadRadius: 5)],
+                    boxShadow: [BoxShadow(color: AppColors.neonOrange.withValues(alpha: 0.3), blurRadius: 20, spreadRadius: 5)],
                   ),
                   child: const Icon(Icons.notifications_rounded, size: 40, color: Colors.white),
                 ).animate().scale(begin: const Offset(0.5, 0.5), duration: 600.ms, curve: Curves.elasticOut)

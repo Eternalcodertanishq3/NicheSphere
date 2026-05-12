@@ -39,15 +39,15 @@ class AppBottomNav extends StatelessWidget {
           child: Container(
             height: 72,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.65),
+              color: Colors.white.withValues(alpha: 0.65),
               borderRadius: AppBorderRadius.pill,
               border: Border.all(
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.white.withValues(alpha: 0.4),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.neonPurple.withOpacity(0.08),
+                  color: AppColors.neonPurple.withValues(alpha: 0.08),
                   blurRadius: 30,
                   offset: const Offset(0, 10),
                 ),
@@ -88,7 +88,7 @@ class AppBottomNav extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: AppColors.neonPink.withOpacity(0.4),
+              color: AppColors.neonPink.withValues(alpha: 0.4),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
@@ -157,7 +157,7 @@ class AppBottomNav extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.neonPink.withOpacity(0.5),
+                    color: AppColors.neonPink.withValues(alpha: 0.5),
                     blurRadius: 6,
                   ),
                 ],

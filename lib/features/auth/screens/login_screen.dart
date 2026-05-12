@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -10,13 +11,53 @@ import '../../../core/router/route_names.dart';
 import '../../../shared/widgets/gradient_background.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/app_button.dart';
+import '../providers/auth_provider.dart';
 
 /// NicheSphere — Login Screen (Screen 6)
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
+  @override
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  final _emailCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _passwordCtrl.dispose();
+    super.dispose();
+  }
+
+  void _signIn() async {
+    final email = _emailCtrl.text.trim();
+    final password = _passwordCtrl.text;
+    if (email.isEmpty || password.isEmpty) return;
+
+    final error = await ref.read(authNotifierProvider.notifier).signIn(email, password);
+    if (mounted && error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+    } else if (mounted) {
+      context.go(RouteNames.home);
+    }
+  }
+
+  void _googleSignIn() async {
+    final error = await ref.read(authNotifierProvider.notifier).signInWithGoogle();
+    if (mounted && error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+    } else if (mounted) {
+      context.go(RouteNames.home);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authNotifierProvider);
+    final isLoading = authState.isLoading;
+
     return Scaffold(
       body: GradientBackground(
         child: SafeArea(
@@ -31,7 +72,7 @@ class LoginScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(colors: [AppColors.neonPink, AppColors.neonPurple]),
-                    boxShadow: [BoxShadow(color: AppColors.neonPink.withOpacity(0.3), blurRadius: 20)],
+                    boxShadow: [BoxShadow(color: AppColors.neonPink.withValues(alpha: 0.3), blurRadius: 20)],
                   ),
                   child: const Icon(Icons.blur_on_rounded, size: 40, color: Colors.white),
                 ).animate().scale(begin: const Offset(0.8, 0.8), duration: 500.ms, curve: Curves.easeOutCubic),
@@ -48,9 +89,9 @@ class LoginScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(AppSpacing.lg24),
                   child: Column(
                     children: [
-                      _buildTextField(hint: 'Email', icon: Icons.email_outlined),
+                      _buildTextField(hint: 'Email', icon: Icons.email_outlined, ctrl: _emailCtrl),
                       const SizedBox(height: AppSpacing.md16),
-                      _buildTextField(hint: 'Password', icon: Icons.lock_outline_rounded, obscure: true),
+                      _buildTextField(hint: 'Password', icon: Icons.lock_outline_rounded, obscure: true, ctrl: _passwordCtrl),
                       const SizedBox(height: AppSpacing.xs8),
                       Align(
                         alignment: Alignment.centerRight,
@@ -61,8 +102,9 @@ class LoginScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.md16),
                       AppButton(
-                        label: 'Sign In',
-                        onTap: () => context.go(RouteNames.home),
+                        label: isLoading ? 'Signing In...' : 'Sign In',
+                        isDisabled: isLoading,
+                        onTap: _signIn,
                         gradient: const LinearGradient(colors: [AppColors.neonPink, AppColors.neonPurple]),
                       ),
                     ],
@@ -71,15 +113,18 @@ class LoginScreen extends StatelessWidget {
                 const SizedBox(height: AppSpacing.lg24),
                 // Divider
                 Row(children: [
-                  Expanded(child: Divider(color: AppColors.textHint.withOpacity(0.3))),
+                  Expanded(child: Divider(color: AppColors.textHint.withValues(alpha: 0.3))),
                   Padding(padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md16),
                     child: Text('or continue with', style: AppTextStyles.bodyS)),
-                  Expanded(child: Divider(color: AppColors.textHint.withOpacity(0.3))),
+                  Expanded(child: Divider(color: AppColors.textHint.withValues(alpha: 0.3))),
                 ]),
                 const SizedBox(height: AppSpacing.lg24),
                 // Social auth buttons
                 Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  _buildSocialButton(Icons.public_rounded, 'Google'),
+                  GestureDetector(
+                    onTap: isLoading ? null : _googleSignIn,
+                    child: _buildSocialButton(Icons.public_rounded, 'Google'),
+                  ),
                   const SizedBox(width: AppSpacing.md16),
                   _buildSocialButton(Icons.apple_rounded, 'Apple'),
                 ]),
@@ -99,26 +144,27 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField({required String hint, required IconData icon, bool obscure = false}) {
+  Widget _buildTextField({required String hint, required IconData icon, bool obscure = false, required TextEditingController ctrl}) {
     return ClipRRect(
       borderRadius: AppBorderRadius.md,
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: TextField(
+          controller: ctrl,
           obscureText: obscure,
           style: AppTextStyles.bodyM,
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: Icon(icon, color: AppColors.textHint, size: 20),
             filled: true,
-            fillColor: Colors.white.withOpacity(0.5),
+            fillColor: Colors.white.withValues(alpha: 0.5),
             border: OutlineInputBorder(
               borderRadius: AppBorderRadius.md,
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: AppBorderRadius.md,
-              borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
             ),
           ),
         ),

@@ -28,7 +28,7 @@ class LocationPermissionScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(colors: [AppColors.neonBlue, AppColors.neonPurple]),
-                    boxShadow: [BoxShadow(color: AppColors.neonBlue.withOpacity(0.3), blurRadius: 20, spreadRadius: 5)],
+                    boxShadow: [BoxShadow(color: AppColors.neonBlue.withValues(alpha: 0.3), blurRadius: 20, spreadRadius: 5)],
                   ),
                   child: const Icon(Icons.location_on_rounded, size: 40, color: Colors.white),
                 ).animate().scale(begin: const Offset(0.5, 0.5), duration: 600.ms, curve: Curves.elasticOut),

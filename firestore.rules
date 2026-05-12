@@ -1,0 +1,96 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user is accessing their own document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      // Anyone can read user profiles (needed for events/communities)
+      allow read: if isAuthenticated();
+      // Users can only create/update their own profiles
+      allow create, update: if isOwner(userId);
+      allow delete: if false;
+    }
+
+    match /events/{eventId} {
+      // Anyone authenticated can read events
+      allow read: if isAuthenticated();
+      // Any authenticated user can create an event
+      allow create: if isAuthenticated() && request.resource.data.organizerId == request.auth.uid;
+      // Only the organizer can update/delete
+      allow update, delete: if isOwner(resource.data.organizerId);
+      // Exception: Anyone can update attendeeCount
+      allow update: if isAuthenticated() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attendeeCount']);
+    }
+
+    match /rsvps/{rsvpId} {
+      allow read: if isAuthenticated();
+      // Users can only create/delete their own RSVPs
+      allow create, delete: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if false;
+    }
+
+    match /savedEvents/{savedId} {
+      allow read: if isAuthenticated();
+      // Users can only manage their own saved events
+      allow create, delete: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if false;
+    }
+
+    match /communities/{communityId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      // Only admins can update the community
+      allow update, delete: if isAuthenticated() && request.auth.uid in resource.data.adminIds;
+      // Exception: Anyone can update memberCount
+      allow update: if isAuthenticated() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount']);
+    }
+
+    match /communityMembers/{memberId} {
+      allow read: if isAuthenticated();
+      // Users can only join/leave themselves
+      allow create, delete: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if false;
+    }
+
+    match /follows/{followId} {
+      allow read: if isAuthenticated();
+      // Users can only follow/unfollow for themselves
+      allow create, delete: if isAuthenticated() && request.resource.data.followerId == request.auth.uid;
+      allow update: if false;
+    }
+
+    match /chatRooms/{roomId} {
+      // Members can read the room
+      allow read: if isAuthenticated() && request.auth.uid in resource.data.memberIds;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && request.auth.uid in resource.data.memberIds;
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        // Only members of the parent chat room can read/write messages
+        allow read: if isAuthenticated() && request.auth.uid in get(/databases/$(database)/documents/chatRooms/$(roomId)).data.memberIds;
+        allow create: if isAuthenticated() 
+                     && request.resource.data.senderId == request.auth.uid 
+                     && request.auth.uid in get(/databases/$(database)/documents/chatRooms/$(roomId)).data.memberIds;
+        // Allow adding reactions
+        allow update: if isAuthenticated() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']);
+        allow delete: if false;
+      }
+    }
+
+    match /notifications/{notificationId} {
+      // Users can only read and update (mark as read) their own notifications
+      allow read, update: if isOwner(resource.data.userId);
+      allow create, delete: if false; // Notifications are created by Cloud Functions
+    }
+  }
+}

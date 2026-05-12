@@ -90,17 +90,17 @@ class _GlassCardState extends State<GlassCard>
               padding: widget.padding,
               decoration: BoxDecoration(
                 color: (widget.tintColor ?? Colors.white)
-                    .withOpacity(widget.opacity),
+                    .withValues(alpha: widget.opacity),
                 borderRadius: radius,
                 border: Border.all(
-                  color: Colors.white.withOpacity(widget.borderOpacity),
+                  color: Colors.white.withValues(alpha: widget.borderOpacity),
                   width: 1.5,
                 ),
                 boxShadow: widget.glowColor != null
                     ? [
                         BoxShadow(
                           color: widget.glowColor!
-                              .withOpacity(widget.glowIntensity),
+                              .withValues(alpha: widget.glowIntensity),
                           blurRadius: 20,
                           spreadRadius: 0,
                         ),

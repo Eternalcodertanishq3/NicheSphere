@@ -42,19 +42,19 @@ class PastelBubble extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? neonColor.withOpacity(0.18)
-              : pastelColor.withOpacity(0.6),
+              ? neonColor.withValues(alpha: 0.18)
+              : pastelColor.withValues(alpha: 0.6),
           borderRadius: AppBorderRadius.pill,
           border: Border.all(
             color: isSelected
-                ? neonColor.withOpacity(0.8)
-                : Colors.white.withOpacity(0.5),
+                ? neonColor.withValues(alpha: 0.8)
+                : Colors.white.withValues(alpha: 0.5),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: neonColor.withOpacity(0.35),
+                    color: neonColor.withValues(alpha: 0.35),
                     blurRadius: 16,
                     spreadRadius: 2,
                     offset: const Offset(0, 2),

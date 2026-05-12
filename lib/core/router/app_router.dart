@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'route_names.dart';
+import '../di/providers.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/onboarding/screens/welcome_screen.dart';
 import '../../features/onboarding/screens/interest_selector_screen.dart';
@@ -20,13 +23,41 @@ import '../../features/settings/screens/settings_screen.dart';
 import '../../features/profile/screens/edit_profile_screen.dart';
 import '../../features/profile/screens/badges_screen.dart';
 
-/// NicheSphere — App Router (GoRouter)
-/// All navigation via GoRouter with named routes.
+/// NicheSphere — App Router (GoRouter) with auth guards.
 class AppRouter {
   AppRouter._();
 
   static final GoRouter router = GoRouter(
     initialLocation: RouteNames.splash,
+    redirect: (context, state) {
+      // Try to read auth state from the ProviderScope
+      try {
+        final container = ProviderScope.containerOf(context);
+        final authState = container.read(authStateProvider);
+        final isLoggedIn = authState.value != null;
+        final isOnboarded = Hive.box('settings')
+            .get('onboarding_complete', defaultValue: false) as bool;
+
+        final currentPath = state.matchedLocation;
+        final goingToAuth = currentPath.startsWith('/login') ||
+            currentPath.startsWith('/register') ||
+            currentPath.startsWith('/welcome') ||
+            currentPath.startsWith('/interests');
+        final isOnSplash = currentPath == '/';
+
+        // Don't redirect on splash — let it handle its own navigation
+        if (isOnSplash) return null;
+
+        if (!isLoggedIn && !goingToAuth) return RouteNames.welcome;
+        if (isLoggedIn && !isOnboarded && !goingToAuth) {
+          return RouteNames.interestSelector;
+        }
+        if (isLoggedIn && goingToAuth) return RouteNames.home;
+      } catch (_) {
+        // Provider not available yet (e.g., during splash)
+      }
+      return null;
+    },
     routes: [
       GoRoute(
         path: RouteNames.splash,
@@ -34,108 +65,128 @@ class AppRouter {
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
           child: const SplashScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-              FadeTransition(opacity: animation, child: child),
+          transitionsBuilder:
+              (context, animation, secondaryAnimation, child) =>
+                  FadeTransition(opacity: animation, child: child),
         ),
       ),
       GoRoute(
         path: RouteNames.welcome,
         name: 'welcome',
-        pageBuilder: (context, state) => _buildPage(state, const WelcomeScreen()),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const WelcomeScreen()),
       ),
       GoRoute(
         path: RouteNames.interestSelector,
         name: 'interests',
-        pageBuilder: (context, state) => _buildPage(state, const InterestSelectorScreen()),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const InterestSelectorScreen()),
       ),
       GoRoute(
         path: RouteNames.locationPermission,
         name: 'locationPermission',
-        pageBuilder: (context, state) => _buildPage(state, const LocationPermissionScreen()),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const LocationPermissionScreen()),
       ),
       GoRoute(
         path: RouteNames.notificationPermission,
         name: 'notificationPermission',
-        pageBuilder: (context, state) => _buildPage(state, const NotificationPermissionScreen()),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const NotificationPermissionScreen()),
       ),
       GoRoute(
         path: RouteNames.login,
         name: 'login',
-        pageBuilder: (context, state) => _buildPage(state, const LoginScreen()),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const LoginScreen()),
       ),
       GoRoute(
         path: RouteNames.register,
         name: 'register',
-        pageBuilder: (context, state) => _buildPage(state, const RegisterScreen()),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const RegisterScreen()),
       ),
       GoRoute(
         path: RouteNames.home,
         name: 'home',
-        pageBuilder: (context, state) => _buildPage(state, const HomeScreen()),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const HomeScreen()),
       ),
       GoRoute(
         path: RouteNames.explore,
         name: 'explore',
-        pageBuilder: (context, state) => _buildPage(state, const ExploreScreen()),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const ExploreScreen()),
       ),
       GoRoute(
         path: RouteNames.createEvent,
         name: 'createEvent',
-        pageBuilder: (context, state) => _buildPage(state, const CreateEventScreen()),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const CreateEventScreen()),
       ),
       GoRoute(
         path: RouteNames.inbox,
         name: 'inbox',
-        pageBuilder: (context, state) => _buildPage(state, const InboxScreen()),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const InboxScreen()),
       ),
       GoRoute(
         path: RouteNames.profile,
         name: 'profile',
-        pageBuilder: (context, state) => _buildPage(state, const ProfileScreen()),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const ProfileScreen()),
       ),
       GoRoute(
         path: '/event/:id',
         name: 'eventDetails',
         pageBuilder: (context, state) {
           final eventId = state.pathParameters['id'] ?? '';
-          return _buildPage(state, EventDetailsScreen(eventId: eventId));
+          return _buildPage(
+              state, EventDetailsScreen(eventId: eventId));
         },
       ),
       GoRoute(
         path: RouteNames.communities,
         name: 'communities',
-        pageBuilder: (context, state) => _buildPage(state, const CommunitiesScreen()),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const CommunitiesScreen()),
       ),
       GoRoute(
         path: RouteNames.notifications,
         name: 'notifications',
-        pageBuilder: (context, state) => _buildPage(state, const NotificationsScreen()),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const NotificationsScreen()),
       ),
       GoRoute(
         path: RouteNames.settings,
         name: 'settings',
-        pageBuilder: (context, state) => _buildPage(state, const SettingsScreen()),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const SettingsScreen()),
       ),
       GoRoute(
         path: RouteNames.editProfile,
         name: 'editProfile',
-        pageBuilder: (context, state) => _buildPage(state, const EditProfileScreen()),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const EditProfileScreen()),
       ),
       GoRoute(
         path: RouteNames.badges,
         name: 'badges',
-        pageBuilder: (context, state) => _buildPage(state, const BadgesScreen()),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const BadgesScreen()),
       ),
     ],
   );
 
   /// Standard page transition: FadeTransition + slight vertical slide (20px up), 300ms
-  static CustomTransitionPage _buildPage(GoRouterState state, Widget child) {
+  static CustomTransitionPage _buildPage(
+      GoRouterState state, Widget child) {
     return CustomTransitionPage(
       key: state.pageKey,
       child: child,
       transitionDuration: const Duration(milliseconds: 300),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      transitionsBuilder:
+          (context, animation, secondaryAnimation, child) {
         final curvedAnimation = CurvedAnimation(
           parent: animation,
           curve: Curves.easeOutCubic,

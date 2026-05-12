@@ -42,12 +42,12 @@ class AppButton extends StatelessWidget {
                     colors: [AppColors.neonPink, AppColors.neonPurple],
                   ))
               : null,
-          color: enabled ? null : AppColors.textHint.withOpacity(0.3),
+          color: enabled ? null : AppColors.textHint.withValues(alpha: 0.3),
           borderRadius: AppBorderRadius.pill,
           boxShadow: enabled
               ? [
                   BoxShadow(
-                    color: AppColors.neonPink.withOpacity(0.3),
+                    color: AppColors.neonPink.withValues(alpha: 0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),

@@ -95,9 +95,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             child: AnimatedContainer(duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: isActive ? AppColors.neonPink.withOpacity(0.15) : Colors.white.withOpacity(0.5),
+                color: isActive ? AppColors.neonPink.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.5),
                 borderRadius: AppBorderRadius.pill,
-                border: Border.all(color: isActive ? AppColors.neonPink : Colors.white.withOpacity(0.4))),
+                border: Border.all(color: isActive ? AppColors.neonPink : Colors.white.withValues(alpha: 0.4))),
               child: Row(mainAxisSize: MainAxisSize.min, children: [
                 Text(cat['emoji']!, style: const TextStyle(fontSize: 16)),
                 const SizedBox(width: 4),

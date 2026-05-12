@@ -37,7 +37,7 @@ class AppSnackbar {
           AppSpacing.xxl80 + AppSpacing.lg24,
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: color.withOpacity(0.9),
+        backgroundColor: color.withValues(alpha: 0.9),
         duration: duration,
         content: Row(
           children: [
