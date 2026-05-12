@@ -124,10 +124,11 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.blur_on_rounded,
-                    size: 60,
-                    color: Colors.white,
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 )
                     .animate()

@@ -74,7 +74,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     gradient: const LinearGradient(colors: [AppColors.neonPink, AppColors.neonPurple]),
                     boxShadow: [BoxShadow(color: AppColors.neonPink.withValues(alpha: 0.3), blurRadius: 20)],
                   ),
-                  child: const Icon(Icons.blur_on_rounded, size: 40, color: Colors.white),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ).animate().scale(begin: const Offset(0.8, 0.8), duration: 500.ms, curve: Curves.easeOutCubic),
                 const SizedBox(height: AppSpacing.lg24),
                 Text('Welcome Back', style: AppTextStyles.displayL).animate().fadeIn(delay: 200.ms),
