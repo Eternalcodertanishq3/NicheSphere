@@ -20,47 +20,59 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userAsync = ref.watch(currentUserProvider);
-    return Scaffold(
-      body: Stack(children: [
-        GradientBackground(
-          child: SafeArea(
-            bottom: false,
-            child: userAsync.when(
-              data: (user) {
-                if (user == null) return const Center(child: Text('Sign in to view profile'));
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.only(bottom: 120),
-                  child: Column(children: [
-                    const SizedBox(height: AppSpacing.md16),
-                    _header(context),
-                    const SizedBox(height: AppSpacing.lg24),
-                    _avatarSection(user),
-                    const SizedBox(height: AppSpacing.lg24),
-                    _statsRow(user),
-                    const SizedBox(height: AppSpacing.lg24),
-                    _interests(user),
-                    const SizedBox(height: AppSpacing.lg24),
-                    _badges(context),
-                  ]),
-                );
-              },
-              loading: () => const LoadingShimmer(),
-              error: (_, __) => Center(child: GestureDetector(
-                onTap: () => ref.invalidate(currentUserProvider),
-                child: Text('Retry', style: AppTextStyles.label.copyWith(color: AppColors.neonPink)))),
-            ),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        context.go(RouteNames.home);
+      },
+      child: Scaffold(
+        body: GradientBackground(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              SafeArea(
+                child: ref.watch(currentUserProvider).when(
+                  data: (user) {
+                    if (user == null) return const Center(child: Text('User not found'));
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 120),
+                      child: Column(children: [
+                        const SizedBox(height: AppSpacing.md16),
+                        _header(context),
+                        const SizedBox(height: AppSpacing.lg24),
+                        _avatarSection(user),
+                        const SizedBox(height: AppSpacing.lg24),
+                        _statsRow(user),
+                        const SizedBox(height: AppSpacing.lg24),
+                        _interests(user),
+                        const SizedBox(height: AppSpacing.lg24),
+                        _badges(context),
+                      ]),
+                    );
+                  },
+                  loading: () => const LoadingShimmer(),
+                  error: (_, __) => Center(child: GestureDetector(
+                    onTap: () => ref.invalidate(currentUserProvider),
+                    child: Text('Retry', style: AppTextStyles.label.copyWith(color: AppColors.neonPink)))),
+                ),
+              ),
+              AppBottomNav(
+                currentIndex: 4,
+                onTap: (i) {
+                  if (i == 4) return;
+                  switch (i) {
+                    case 0: context.go(RouteNames.home); break;
+                    case 1: context.go(RouteNames.explore); break;
+                    case 2: context.go(RouteNames.createEvent); break;
+                    case 3: context.go(RouteNames.inbox); break;
+                  }
+                },
+              ),
+            ],
           ),
         ),
-        AppBottomNav(currentIndex: 4, onTap: (i) {
-          switch (i) {
-            case 0: context.go(RouteNames.home);
-            case 1: context.go(RouteNames.explore);
-            case 2: context.go(RouteNames.createEvent);
-            case 3: context.go(RouteNames.inbox);
-          }
-        }),
-      ]),
+      ),
     );
   }
 
@@ -132,9 +144,12 @@ class ProfileScreen extends ConsumerWidget {
         GestureDetector(onTap: () => context.go(RouteNames.badges),
           child: Text('View All', style: AppTextStyles.label.copyWith(color: AppColors.neonPink)))]),
       const SizedBox(height: AppSpacing.sm12),
-      SizedBox(height: 90, child: ListView(scrollDirection: Axis.horizontal, children: [
-        _badge('🌟', 'Explorer', AppColors.neonOrange), _badge('🎤', 'Host', AppColors.neonPink), _badge('🏗️', 'Builder', AppColors.neonBlue),
-      ])),
+      SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(children: [
+          _badge('🌟', 'Explorer', AppColors.neonOrange), _badge('🎤', 'Host', AppColors.neonPink), _badge('🏗️', 'Builder', AppColors.neonBlue),
+        ]),
+      ),
     ]),
   ).animate().fadeIn(delay: 400.ms);
 
@@ -142,6 +157,10 @@ class ProfileScreen extends ConsumerWidget {
     Text(v, style: AppTextStyles.titleL.copyWith(color: AppColors.neonPink)), const SizedBox(height: 2), Text(l, style: AppTextStyles.micro)]));
   Widget _div() => Container(width: 1, height: 30, color: AppColors.textHint.withValues(alpha: 0.2));
   Widget _badge(String e, String n, Color c) => Padding(padding: const EdgeInsets.only(right: 12),
-    child: GlassCard(blur: 10, opacity: 0.2, borderRadius: AppBorderRadius.lg, glowColor: c, padding: const EdgeInsets.all(16),
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Text(e, style: const TextStyle(fontSize: 28)), const SizedBox(height: 4), Text(n, style: AppTextStyles.label.copyWith(color: c))])));
+    child: GlassCard(blur: 10, opacity: 0.2, borderRadius: AppBorderRadius.lg, glowColor: c, padding: const EdgeInsets.all(12),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Text(e, style: const TextStyle(fontSize: 24)),
+        const SizedBox(height: 4),
+        Text(n, style: AppTextStyles.label.copyWith(color: c, height: 1.0))
+      ])));
 }

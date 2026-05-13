@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -21,6 +24,71 @@ class CreateEventScreen extends StatefulWidget {
 class _CreateEventScreenState extends State<CreateEventScreen> {
   int _step = 0;
   int _selectedCat = 0;
+  XFile? _image;
+  DateTime? _selectedDateTime;
+  final _picker = ImagePicker();
+
+  Future<void> _pickDateTime() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.dark(
+            primary: AppColors.neonPink,
+            onPrimary: Colors.white,
+            surface: AppColors.gradEnd,
+            onSurface: Colors.white,
+          ),
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(foregroundColor: AppColors.neonPink),
+          ),
+        ),
+        child: child!,
+      ),
+    );
+
+    if (date != null) {
+      if (!mounted) return;
+      final time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+        builder: (context, child) => Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: AppColors.neonPink,
+              onPrimary: Colors.white,
+              surface: AppColors.gradEnd,
+              onSurface: Colors.white,
+            ),
+          ),
+          child: child!,
+        ),
+      );
+
+      if (time != null) {
+        if (!mounted) return;
+        setState(() {
+          _selectedDateTime = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            time.hour,
+            time.minute,
+          );
+        });
+      }
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() => _image = image);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,16 +180,38 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('Event Details', style: AppTextStyles.titleL).animate().fadeIn(),
       const SizedBox(height: AppSpacing.md20),
-      // Image picker placeholder
-      GlassCard(blur: 10, opacity: 0.15, borderRadius: AppBorderRadius.xl,
-        padding: const EdgeInsets.all(AppSpacing.xl40),
-        child: Column(children: [
-          const Icon(Icons.add_photo_alternate_outlined, size: 48, color: AppColors.textHint),
-          const SizedBox(height: 8),
-          Text('Add Cover Image', style: AppTextStyles.bodyM.copyWith(color: AppColors.textSecondary)),
-        ])),
+      // Image picker
+      GestureDetector(
+        onTap: _pickImage,
+        child: GlassCard(
+          blur: 10,
+          opacity: 0.15,
+          borderRadius: AppBorderRadius.xl,
+          padding: _image == null ? const EdgeInsets.all(AppSpacing.xl40) : EdgeInsets.zero,
+          child: Container(
+            width: double.infinity,
+            height: _image == null ? null : 200,
+            decoration: _image == null ? null : BoxDecoration(
+              borderRadius: AppBorderRadius.xl,
+              image: DecorationImage(image: FileImage(File(_image!.path)), fit: BoxFit.cover),
+            ),
+            child: _image == null ? Column(
+              children: [
+                const Icon(Icons.add_photo_alternate_outlined, size: 48, color: AppColors.textHint),
+                const SizedBox(height: 8),
+                Text('Add Cover Image', style: AppTextStyles.bodyM.copyWith(color: AppColors.textSecondary)),
+              ],
+            ) : const SizedBox.shrink(),
+          ),
+        ),
+      ),
       const SizedBox(height: AppSpacing.md20),
-      _glassField('Date & Time', Icons.calendar_today_outlined),
+      _glassField(
+        _selectedDateTime == null ? 'Date & Time' : DateFormat('MMM dd, h:mm a').format(_selectedDateTime!),
+        Icons.calendar_today_outlined,
+        readOnly: true,
+        onTap: _pickDateTime,
+      ),
       const SizedBox(height: AppSpacing.md16),
       _glassField('Duration', Icons.timer_outlined),
       const SizedBox(height: AppSpacing.md16),
@@ -155,10 +245,40 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     ]);
   }
 
-  Widget _glassField(String hint, IconData icon, {int maxLines = 1}) {
-    return GlassCard(blur: 10, opacity: 0.2, borderRadius: AppBorderRadius.md,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: TextField(maxLines: maxLines, style: AppTextStyles.bodyM,
-        decoration: InputDecoration.collapsed(hintText: hint, hintStyle: AppTextStyles.bodyM.copyWith(color: AppColors.textHint))));
+  Widget _glassField(String hint, IconData icon, {int maxLines = 1, bool readOnly = false, VoidCallback? onTap}) {
+    return Container(
+      constraints: BoxConstraints(minHeight: maxLines > 1 ? 120 : 56),
+      child: GlassCard(
+        blur: 10,
+        opacity: 0.2,
+        borderRadius: AppBorderRadius.md,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        onTap: onTap,
+        child: Row(
+          crossAxisAlignment: maxLines > 1 ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(top: maxLines > 1 ? 12 : 0),
+              child: Icon(icon, size: 20, color: AppColors.textHint),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextField(
+                maxLines: maxLines,
+                readOnly: readOnly,
+                onTap: onTap,
+                style: AppTextStyles.bodyM,
+                decoration: InputDecoration(
+                  hintText: hint,
+                  hintStyle: AppTextStyles.bodyM.copyWith(color: AppColors.textHint),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: maxLines > 1 ? 12 : 16),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

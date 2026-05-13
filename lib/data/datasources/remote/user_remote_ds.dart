@@ -40,7 +40,10 @@ class UserRemoteDataSource {
   }
 
   Future<void> saveInterests(List<String> interests) async {
-    await _db.collection('users').doc(_uid).update({'interests': interests});
+    await _db
+        .collection('users')
+        .doc(_uid)
+        .set({'interests': interests}, SetOptions(merge: true));
   }
 
   Future<void> followUser(String targetId) async {

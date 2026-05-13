@@ -36,7 +36,7 @@ dependencies:
   google_maps_flutter: ^2.9.0
   geolocator: ^14.0.2
   geocoding: ^4.0.0
-  workmanager: ^0.5.2
+  workmanager: ^0.9.0+3
 
   # Storage & Local DB
   hive: ^2.2.3
@@ -67,7 +67,7 @@ dependencies:
 
   # Auth (Social)
   google_sign_in: ^6.2.1
-  sign_in_with_apple: ^3.3.0
+  sign_in_with_apple: ^6.1.4
 
   # Notifications
   flutter_local_notifications: ^20.1.0

@@ -26,7 +26,7 @@ class _SplashScreenState extends State<SplashScreen>
       const Duration(milliseconds: AppConstants.splashDurationMs),
       () {
         if (mounted) {
-          context.go(RouteNames.welcome);
+          context.go(RouteNames.home);
         }
       },
     );

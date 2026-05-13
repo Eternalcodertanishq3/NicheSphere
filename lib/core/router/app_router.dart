@@ -24,38 +24,48 @@ import '../../features/profile/screens/edit_profile_screen.dart';
 import '../../features/profile/screens/badges_screen.dart';
 
 /// NicheSphere — App Router (GoRouter) with auth guards.
-class AppRouter {
-  AppRouter._();
-
-  static final GoRouter router = GoRouter(
+final routerProvider = Provider<GoRouter>((ref) {
+  // We use ref.listen to refresh the router without re-creating the entire instance
+  // This is the key to preventing the "Redirect loop detected" error
+  final router = GoRouter(
     initialLocation: RouteNames.splash,
     redirect: (context, state) {
-      // Try to read auth state from the ProviderScope
-      try {
-        final container = ProviderScope.containerOf(context);
-        final authState = container.read(authStateProvider);
-        final isLoggedIn = authState.value != null;
-        final isOnboarded = Hive.box('settings')
-            .get('onboarding_complete', defaultValue: false) as bool;
+      final authState = ref.read(authStateProvider);
+      
+      // If auth is still loading, stay on Splash
+      if (authState.isLoading) return null;
 
-        final currentPath = state.matchedLocation;
-        final goingToAuth = currentPath.startsWith('/login') ||
-            currentPath.startsWith('/register') ||
-            currentPath.startsWith('/welcome') ||
-            currentPath.startsWith('/interests');
-        final isOnSplash = currentPath == '/';
+      final isLoggedIn = authState.value != null;
+      final isOnboarded = Hive.box('settings')
+          .get('onboarding_complete', defaultValue: false) as bool;
+      final currentPath = state.matchedLocation;
 
-        // Don't redirect on splash — let it handle its own navigation
-        if (isOnSplash) return null;
+      // Define our route groups
+      final isAuthPath = currentPath == RouteNames.welcome ||
+          currentPath == RouteNames.login ||
+          currentPath == RouteNames.register;
+      
+      final isOnboardingPath = currentPath == RouteNames.interestSelector ||
+          currentPath == RouteNames.locationPermission ||
+          currentPath == RouteNames.notificationPermission;
 
-        if (!isLoggedIn && !goingToAuth) return RouteNames.welcome;
-        if (isLoggedIn && !isOnboarded && !goingToAuth) {
-          return RouteNames.interestSelector;
-        }
-        if (isLoggedIn && goingToAuth) return RouteNames.home;
-      } catch (_) {
-        // Provider not available yet (e.g., during splash)
+      // 1. Not Logged In?
+      if (!isLoggedIn) {
+        if (isAuthPath) return null;
+        return RouteNames.welcome;
       }
+
+      // 2. Logged In but Not Onboarded?
+      if (!isOnboarded) {
+        if (isOnboardingPath) return null;
+        return RouteNames.interestSelector;
+      }
+
+      // 3. Logged In and Fully Onboarded?
+      if (isAuthPath || isOnboardingPath || currentPath == RouteNames.welcome || currentPath == RouteNames.splash) {
+        return RouteNames.home;
+      }
+
       return null;
     },
     routes: [
@@ -65,9 +75,8 @@ class AppRouter {
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
           child: const SplashScreen(),
-          transitionsBuilder:
-              (context, animation, secondaryAnimation, child) =>
-                  FadeTransition(opacity: animation, child: child),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              FadeTransition(opacity: animation, child: child),
         ),
       ),
       GoRoute(
@@ -97,8 +106,7 @@ class AppRouter {
       GoRoute(
         path: RouteNames.login,
         name: 'login',
-        pageBuilder: (context, state) =>
-            _buildPage(state, const LoginScreen()),
+        pageBuilder: (context, state) => _buildPage(state, const LoginScreen()),
       ),
       GoRoute(
         path: RouteNames.register,
@@ -109,8 +117,7 @@ class AppRouter {
       GoRoute(
         path: RouteNames.home,
         name: 'home',
-        pageBuilder: (context, state) =>
-            _buildPage(state, const HomeScreen()),
+        pageBuilder: (context, state) => _buildPage(state, const HomeScreen()),
       ),
       GoRoute(
         path: RouteNames.explore,
@@ -127,8 +134,7 @@ class AppRouter {
       GoRoute(
         path: RouteNames.inbox,
         name: 'inbox',
-        pageBuilder: (context, state) =>
-            _buildPage(state, const InboxScreen()),
+        pageBuilder: (context, state) => _buildPage(state, const InboxScreen()),
       ),
       GoRoute(
         path: RouteNames.profile,
@@ -141,8 +147,7 @@ class AppRouter {
         name: 'eventDetails',
         pageBuilder: (context, state) {
           final eventId = state.pathParameters['id'] ?? '';
-          return _buildPage(
-              state, EventDetailsScreen(eventId: eventId));
+          return _buildPage(state, EventDetailsScreen(eventId: eventId));
         },
       ),
       GoRoute(
@@ -178,30 +183,35 @@ class AppRouter {
     ],
   );
 
-  /// Standard page transition: FadeTransition + slight vertical slide (20px up), 300ms
-  static CustomTransitionPage _buildPage(
-      GoRouterState state, Widget child) {
-    return CustomTransitionPage(
-      key: state.pageKey,
-      child: child,
-      transitionDuration: const Duration(milliseconds: 300),
-      transitionsBuilder:
-          (context, animation, secondaryAnimation, child) {
-        final curvedAnimation = CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOutCubic,
-        );
-        return FadeTransition(
-          opacity: curvedAnimation,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 0.05),
-              end: Offset.zero,
-            ).animate(curvedAnimation),
-            child: child,
-          ),
-        );
-      },
-    );
-  }
+  // This ensures the router re-runs its redirection whenever auth state changes
+  ref.listen(authStateProvider, (previous, next) {
+    router.refresh();
+  });
+
+  return router;
+});
+
+/// Standard page transition: FadeTransition + slight vertical slide (20px up), 300ms
+CustomTransitionPage _buildPage(GoRouterState state, Widget child) {
+  return CustomTransitionPage(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 300),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curvedAnimation = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+      );
+      return FadeTransition(
+        opacity: curvedAnimation,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.05),
+            end: Offset.zero,
+          ).animate(curvedAnimation),
+          child: child,
+        ),
+      );
+    },
+  );
 }
