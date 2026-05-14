@@ -72,4 +72,71 @@ class AppTheme {
       ),
     );
   }
+
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: const Color(0xFF0F0F12),
+      colorScheme: const ColorScheme.dark(
+        primary: AppColors.neonPink,
+        secondary: AppColors.neonPurple,
+        surface: Color(0xFF16161D),
+        error: AppColors.error,
+        onPrimary: AppColors.textOnDark,
+        onSecondary: AppColors.textOnDark,
+        onSurface: AppColors.textOnDark,
+        onError: AppColors.textOnDark,
+      ),
+      textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        iconTheme: IconThemeData(color: AppColors.textOnDark),
+        titleTextStyle: TextStyle(
+          color: AppColors.textOnDark,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.neonPink,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(999),
+          ),
+          textStyle: GoogleFonts.outfit(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.white.withValues(alpha: 0.1),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.neonPink, width: 1.5),
+        ),
+        hintStyle: GoogleFonts.outfit(
+          color: AppColors.textHint,
+          fontSize: 14,
+        ),
+      ),
+    );
+  }
 }

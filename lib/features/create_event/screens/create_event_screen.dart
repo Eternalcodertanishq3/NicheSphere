@@ -13,6 +13,8 @@ import '../../../core/router/route_names.dart';
 import '../../../shared/widgets/gradient_background.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/app_button.dart';
+import '../../../shared/widgets/app_back_button.dart';
+import '../../../shared/widgets/glass_text_field.dart';
 
 /// NicheSphere — Create Event Screen (Screen 10)
 class CreateEventScreen extends StatefulWidget {
@@ -28,6 +30,29 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   DateTime? _selectedDateTime;
   final _picker = ImagePicker();
 
+  // Controllers for fields
+  final _nameCtrl = TextEditingController();
+  final _descCtrl = TextEditingController();
+  final _durationCtrl = TextEditingController();
+  final _locationCtrl = TextEditingController();
+  final _capacityCtrl = TextEditingController();
+  final _priceCtrl = TextEditingController();
+  final _sphereCtrl = TextEditingController();
+  final _tagsCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _descCtrl.dispose();
+    _durationCtrl.dispose();
+    _locationCtrl.dispose();
+    _capacityCtrl.dispose();
+    _priceCtrl.dispose();
+    _sphereCtrl.dispose();
+    _tagsCtrl.dispose();
+    super.dispose();
+  }
+
   Future<void> _pickDateTime() async {
     final date = await showDatePicker(
       context: context,
@@ -42,9 +67,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             surface: AppColors.gradEnd,
             onSurface: Colors.white,
           ),
-          textButtonTheme: TextButtonThemeData(
-            style: TextButton.styleFrom(foregroundColor: AppColors.neonPink),
-          ),
         ),
         child: child!,
       ),
@@ -55,17 +77,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       final time = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.now(),
-        builder: (context, child) => Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.neonPink,
-              onPrimary: Colors.white,
-              surface: AppColors.gradEnd,
-              onSurface: Colors.white,
-            ),
-          ),
-          child: child!,
-        ),
       );
 
       if (time != null) {
@@ -100,8 +111,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             Padding(
               padding: const EdgeInsets.all(AppSpacing.lg24),
               child: Row(children: [
-                GestureDetector(onTap: () => _step > 0 ? setState(() => _step--) : context.go(RouteNames.home),
-                  child: const Icon(Icons.arrow_back_rounded)),
+                AppBackButton(
+                  onTap: () {
+                    if (_step > 0) {
+                      setState(() => _step--);
+                    } else {
+                      context.go(RouteNames.home);
+                    }
+                  },
+                ),
                 const SizedBox(width: AppSpacing.sm12),
                 Text('Create Event', style: AppTextStyles.titleXL),
                 const Spacer(),
@@ -146,9 +164,20 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('Event Basics', style: AppTextStyles.titleL).animate().fadeIn(),
       const SizedBox(height: AppSpacing.md20),
-      _glassField('Event Name', Icons.event_rounded),
+      GlassTextField(
+        label: 'Event Name',
+        hintText: 'Give it a catchy name',
+        controller: _nameCtrl,
+        prefixIcon: Icons.event_rounded,
+      ),
       const SizedBox(height: AppSpacing.md16),
-      _glassField('Description', Icons.description_outlined, maxLines: 4),
+      GlassTextField(
+        label: 'Description',
+        hintText: 'What\'s happening?',
+        controller: _descCtrl,
+        prefixIcon: Icons.description_outlined,
+        maxLines: 4,
+      ),
       const SizedBox(height: AppSpacing.md20),
       Text('Category', style: AppTextStyles.titleM),
       const SizedBox(height: AppSpacing.sm12),
@@ -206,21 +235,47 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         ),
       ),
       const SizedBox(height: AppSpacing.md20),
-      _glassField(
-        _selectedDateTime == null ? 'Date & Time' : DateFormat('MMM dd, h:mm a').format(_selectedDateTime!),
-        Icons.calendar_today_outlined,
+      GlassTextField(
+        label: 'Date & Time',
+        hintText: _selectedDateTime == null ? 'When?' : DateFormat('MMM dd, h:mm a').format(_selectedDateTime!),
+        prefixIcon: Icons.calendar_today_outlined,
         readOnly: true,
         onTap: _pickDateTime,
       ),
       const SizedBox(height: AppSpacing.md16),
-      _glassField('Duration', Icons.timer_outlined),
+      GlassTextField(
+        label: 'Duration',
+        hintText: 'e.g. 2 hours',
+        controller: _durationCtrl,
+        prefixIcon: Icons.timer_outlined,
+      ),
       const SizedBox(height: AppSpacing.md16),
-      _glassField('Location', Icons.location_on_outlined),
+      GlassTextField(
+        label: 'Location',
+        hintText: 'Where?',
+        controller: _locationCtrl,
+        prefixIcon: Icons.location_on_outlined,
+      ),
       const SizedBox(height: AppSpacing.md16),
       Row(children: [
-        Expanded(child: _glassField('Max Attendees', Icons.people_outline_rounded)),
+        Expanded(
+          child: GlassTextField(
+            label: 'Capacity',
+            hintText: 'Max attendees',
+            controller: _capacityCtrl,
+            prefixIcon: Icons.people_outline_rounded,
+            keyboardType: TextInputType.number,
+          ),
+        ),
         const SizedBox(width: 12),
-        Expanded(child: _glassField('Price', Icons.attach_money_rounded)),
+        Expanded(
+          child: GlassTextField(
+            label: 'Price',
+            hintText: 'Free or amount',
+            controller: _priceCtrl,
+            prefixIcon: Icons.attach_money_rounded,
+          ),
+        ),
       ]),
     ]);
   }
@@ -229,9 +284,19 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('Community & Tags', style: AppTextStyles.titleL).animate().fadeIn(),
       const SizedBox(height: AppSpacing.md20),
-      _glassField('Link to a Sphere', Icons.hub_outlined),
+      GlassTextField(
+        label: 'Sphere Link',
+        hintText: 'Connect to a community',
+        controller: _sphereCtrl,
+        prefixIcon: Icons.hub_outlined,
+      ),
       const SizedBox(height: AppSpacing.md16),
-      _glassField('Tags (comma separated)', Icons.tag_rounded),
+      GlassTextField(
+        label: 'Tags',
+        hintText: 'comma separated',
+        controller: _tagsCtrl,
+        prefixIcon: Icons.tag_rounded,
+      ),
       const SizedBox(height: AppSpacing.md20),
       Text('Visibility', style: AppTextStyles.titleM),
       const SizedBox(height: AppSpacing.sm12),
@@ -243,42 +308,5 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             child: Center(child: Text(v, style: AppTextStyles.label.copyWith(
               color: v == 'Public' ? AppColors.neonPink : AppColors.textSecondary))))))).toList()),
     ]);
-  }
-
-  Widget _glassField(String hint, IconData icon, {int maxLines = 1, bool readOnly = false, VoidCallback? onTap}) {
-    return Container(
-      constraints: BoxConstraints(minHeight: maxLines > 1 ? 120 : 56),
-      child: GlassCard(
-        blur: 10,
-        opacity: 0.2,
-        borderRadius: AppBorderRadius.md,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        onTap: onTap,
-        child: Row(
-          crossAxisAlignment: maxLines > 1 ? CrossAxisAlignment.start : CrossAxisAlignment.center,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(top: maxLines > 1 ? 12 : 0),
-              child: Icon(icon, size: 20, color: AppColors.textHint),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                maxLines: maxLines,
-                readOnly: readOnly,
-                onTap: onTap,
-                style: AppTextStyles.bodyM,
-                decoration: InputDecoration(
-                  hintText: hint,
-                  hintStyle: AppTextStyles.bodyM.copyWith(color: AppColors.textHint),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(vertical: maxLines > 1 ? 12 : 16),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

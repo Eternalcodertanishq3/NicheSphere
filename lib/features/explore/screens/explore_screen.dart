@@ -10,6 +10,7 @@ import '../../../core/theme/app_border_radius.dart';
 import '../../../core/router/route_names.dart';
 import '../../../shared/widgets/gradient_background.dart';
 import '../../../shared/widgets/glass_card.dart';
+import '../../../shared/widgets/app_back_button.dart';
 import '../../../shared/widgets/loading_shimmer.dart';
 import '../providers/explore_provider.dart';
 
@@ -31,8 +32,7 @@ class ExploreScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(AppSpacing.lg24),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(children: [
-                  GestureDetector(onTap: () => context.go(RouteNames.home),
-                    child: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary)),
+                  AppBackButton(onTap: () => context.go(RouteNames.home)),
                   const SizedBox(width: AppSpacing.sm12),
                   Expanded(child: GlassCard(blur: 15, opacity: 0.25, borderRadius: AppBorderRadius.pill,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

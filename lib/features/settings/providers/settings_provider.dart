@@ -2,6 +2,7 @@
 library;
 
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -16,6 +17,7 @@ class SettingsNotifier extends AsyncNotifier<void> {
   Future<String?> updateProfile(Map<String, dynamic> fields) async {
     state = const AsyncLoading();
     final result = await ref.read(userRepositoryProvider).updateUser(fields);
+    debugPrint('DEBUG: Profile Update Result: ${result.isRight()}');
     return result.fold(
       (f) {
         state = AsyncError(f.message, StackTrace.current);

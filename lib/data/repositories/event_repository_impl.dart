@@ -17,7 +17,9 @@ class EventRepositoryImpl implements EventRepository {
 
   const EventRepositoryImpl(this._remote, this._local, this._auth);
 
-  String get _uid => _auth.currentUser!.uid;
+  String? get _uid => _auth.currentUser?.uid;
+
+  Failure _authFailure() => const AuthFailure('User must be logged in');
 
   @override
   Stream<List<EventModel>> watchFeaturedEvents() async* {
@@ -31,6 +33,7 @@ class EventRepositoryImpl implements EventRepository {
       if (cached.isNotEmpty) {
         yield cached;
       } else {
+        // Log error but yield empty to prevent UI crash
         yield <EventModel>[];
       }
     }
@@ -38,8 +41,20 @@ class EventRepositoryImpl implements EventRepository {
 
   @override
   Stream<List<EventModel>> watchNearbyEvents(
-      {required double lat, required double lng, String? category}) {
-    return _remote.getNearbyEvents(lat: lat, lng: lng, category: category);
+      {required double lat, required double lng, String? category}) async* {
+    try {
+      await for (final events in _remote.getNearbyEvents(lat: lat, lng: lng, category: category)) {
+        _local.cacheNearbyEvents(events);
+        yield events;
+      }
+    } catch (e) {
+      final cached = _local.getCachedNearbyEvents();
+      if (cached.isNotEmpty) {
+        yield cached;
+      } else {
+        yield <EventModel>[];
+      }
+    }
   }
 
   @override
@@ -66,8 +81,11 @@ class EventRepositoryImpl implements EventRepository {
 
   @override
   Future<Either<Failure, String>> createEvent(EventModel event) async {
+    final uid = _uid;
+    if (uid == null) return Left(_authFailure());
+    
     try {
-      final id = await _remote.createEvent(event.copyWith(organizerId: _uid));
+      final id = await _remote.createEvent(event.copyWith(organizerId: uid));
       return Right(id);
     } catch (e) {
       return Left(handleException(e));
@@ -76,8 +94,11 @@ class EventRepositoryImpl implements EventRepository {
 
   @override
   Future<Either<Failure, Unit>> rsvpEvent(String eventId) async {
+    final uid = _uid;
+    if (uid == null) return Left(_authFailure());
+
     try {
-      await _remote.rsvpEvent(eventId, _uid);
+      await _remote.rsvpEvent(eventId, uid);
       return const Right(unit);
     } catch (e) {
       return Left(handleException(e));
@@ -86,8 +107,11 @@ class EventRepositoryImpl implements EventRepository {
 
   @override
   Future<Either<Failure, Unit>> cancelRsvp(String eventId) async {
+    final uid = _uid;
+    if (uid == null) return Left(_authFailure());
+
     try {
-      await _remote.cancelRsvp(eventId, _uid);
+      await _remote.cancelRsvp(eventId, uid);
       return const Right(unit);
     } catch (e) {
       return Left(handleException(e));
@@ -96,8 +120,11 @@ class EventRepositoryImpl implements EventRepository {
 
   @override
   Future<Either<Failure, Unit>> saveEvent(String eventId) async {
+    final uid = _uid;
+    if (uid == null) return Left(_authFailure());
+
     try {
-      await _remote.saveEvent(eventId, _uid);
+      await _remote.saveEvent(eventId, uid);
       return const Right(unit);
     } catch (e) {
       return Left(handleException(e));
@@ -106,8 +133,11 @@ class EventRepositoryImpl implements EventRepository {
 
   @override
   Future<Either<Failure, Unit>> unsaveEvent(String eventId) async {
+    final uid = _uid;
+    if (uid == null) return Left(_authFailure());
+
     try {
-      await _remote.unsaveEvent(eventId, _uid);
+      await _remote.unsaveEvent(eventId, uid);
       return const Right(unit);
     } catch (e) {
       return Left(handleException(e));
@@ -115,10 +145,16 @@ class EventRepositoryImpl implements EventRepository {
   }
 
   @override
-  Stream<bool> watchIsRsvped(String eventId) =>
-      _remote.watchIsRsvped(eventId, _uid);
+  Stream<bool> watchIsRsvped(String eventId) {
+    final uid = _uid;
+    if (uid == null) return Stream.value(false);
+    return _remote.watchIsRsvped(eventId, uid);
+  }
 
   @override
-  Stream<bool> watchIsSaved(String eventId) =>
-      _remote.watchIsSaved(eventId, _uid);
+  Stream<bool> watchIsSaved(String eventId) {
+    final uid = _uid;
+    if (uid == null) return Stream.value(false);
+    return _remote.watchIsSaved(eventId, uid);
+  }
 }

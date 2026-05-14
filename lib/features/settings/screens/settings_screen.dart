@@ -8,6 +8,7 @@ import '../../../core/theme/app_border_radius.dart';
 import '../../../core/router/route_names.dart';
 import '../../../shared/widgets/gradient_background.dart';
 import '../../../shared/widgets/glass_card.dart';
+import '../../../shared/widgets/app_back_button.dart';
 
 /// NicheSphere — Settings Screen (Screen 20)
 class SettingsScreen extends StatelessWidget {
@@ -22,7 +23,7 @@ class SettingsScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(AppSpacing.lg24),
               child: Row(children: [
-                GestureDetector(onTap: () => context.pop(), child: const Icon(Icons.arrow_back_rounded)),
+                const AppBackButton(),
                 const SizedBox(width: AppSpacing.sm12),
                 Text('Settings', style: AppTextStyles.displayL),
               ]),

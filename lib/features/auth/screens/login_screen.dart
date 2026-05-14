@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +10,8 @@ import '../../../core/router/route_names.dart';
 import '../../../shared/widgets/gradient_background.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/app_button.dart';
+import '../../../shared/widgets/app_back_button.dart';
+import '../../../shared/widgets/glass_text_field.dart';
 import '../providers/auth_provider.dart';
 
 /// NicheSphere — Login Screen (Screen 6)
@@ -65,7 +66,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             padding: const EdgeInsets.all(AppSpacing.lg24),
             child: Column(
               children: [
-                const SizedBox(height: AppSpacing.xl48),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: AppBackButton(),
+                ),
+                const SizedBox(height: AppSpacing.lg24),
                 // Logo
                 Container(
                   width: 80, height: 80,
@@ -94,9 +99,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   padding: const EdgeInsets.all(AppSpacing.lg24),
                   child: Column(
                     children: [
-                      _buildTextField(hint: 'Email', icon: Icons.email_outlined, ctrl: _emailCtrl),
+                      GlassTextField(
+                        label: 'Email',
+                        hintText: 'your@email.com',
+                        controller: _emailCtrl,
+                        prefixIcon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                      ),
                       const SizedBox(height: AppSpacing.md16),
-                      _buildTextField(hint: 'Password', icon: Icons.lock_outline_rounded, obscure: true, ctrl: _passwordCtrl),
+                      GlassTextField(
+                        label: 'Password',
+                        hintText: '••••••••',
+                        controller: _passwordCtrl,
+                        prefixIcon: Icons.lock_outline_rounded,
+                        isPassword: true,
+                      ),
                       const SizedBox(height: AppSpacing.xs8),
                       Align(
                         alignment: Alignment.centerRight,
@@ -142,34 +159,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ])),
                 ),
               ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({required String hint, required IconData icon, bool obscure = false, required TextEditingController ctrl}) {
-    return ClipRRect(
-      borderRadius: AppBorderRadius.md,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: TextField(
-          controller: ctrl,
-          obscureText: obscure,
-          style: AppTextStyles.bodyM,
-          decoration: InputDecoration(
-            hintText: hint,
-            prefixIcon: Icon(icon, color: AppColors.textHint, size: 20),
-            filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.5),
-            border: OutlineInputBorder(
-              borderRadius: AppBorderRadius.md,
-              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: AppBorderRadius.md,
-              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
             ),
           ),
         ),

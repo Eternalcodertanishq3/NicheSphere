@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/config/firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
@@ -12,6 +13,9 @@ import 'core/services/background_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
 
   // Firebase
   await Firebase.initializeApp(
@@ -36,10 +40,9 @@ void main() async {
   await BackgroundService.initialize();
   BackgroundService.registerGeofenceTask();
 
-  // System UI
+  // System UI initial state
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.dark,
     systemNavigationBarColor: Colors.transparent,
   ));
 
@@ -58,7 +61,18 @@ class NicheSphereApp extends ConsumerWidget {
       title: 'NicheSphere',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system, // Supports auto-switching
       routerConfig: router,
+      builder: (context, child) {
+        // Update status bar brightness dynamically
+        final brightness = MediaQuery.of(context).platformBrightness;
+        SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+          statusBarIconBrightness: brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+          statusBarBrightness: brightness,
+        ));
+        return child!;
+      },
     );
   }
 }

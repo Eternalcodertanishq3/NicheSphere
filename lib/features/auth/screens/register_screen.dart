@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +10,8 @@ import '../../../core/router/route_names.dart';
 import '../../../shared/widgets/gradient_background.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/app_button.dart';
+import '../../../shared/widgets/app_back_button.dart';
+import '../../../shared/widgets/glass_text_field.dart';
 import '../providers/auth_provider.dart';
 
 /// NicheSphere — Register Screen (Screen 6)
@@ -65,6 +66,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             padding: const EdgeInsets.all(AppSpacing.lg24),
             child: Column(
               children: [
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: AppBackButton(),
+                ),
                 const SizedBox(height: AppSpacing.lg32),
                 Text('Create Account', style: AppTextStyles.displayL).animate().fadeIn(),
                 const SizedBox(height: AppSpacing.xs4),
@@ -74,13 +79,36 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   blur: 20, opacity: 0.25, borderRadius: AppBorderRadius.xl,
                   padding: const EdgeInsets.all(AppSpacing.lg24),
                   child: Column(children: [
-                    _field('Full Name', Icons.person_outline_rounded, _nameCtrl),
+                    GlassTextField(
+                      label: 'Full Name',
+                      hintText: 'Your name',
+                      controller: _nameCtrl,
+                      prefixIcon: Icons.person_outline_rounded,
+                    ),
                     const SizedBox(height: AppSpacing.sm12),
-                    _field('Email', Icons.email_outlined, _emailCtrl),
+                    GlassTextField(
+                      label: 'Email',
+                      hintText: 'your@email.com',
+                      controller: _emailCtrl,
+                      prefixIcon: Icons.email_outlined,
+                      keyboardType: TextInputType.emailAddress,
+                    ),
                     const SizedBox(height: AppSpacing.sm12),
-                    _field('Password', Icons.lock_outline_rounded, _passwordCtrl, obscure: true),
+                    GlassTextField(
+                      label: 'Password',
+                      hintText: '••••••••',
+                      controller: _passwordCtrl,
+                      prefixIcon: Icons.lock_outline_rounded,
+                      isPassword: true,
+                    ),
                     const SizedBox(height: AppSpacing.sm12),
-                    _field('Confirm Password', Icons.lock_outline_rounded, _confirmCtrl, obscure: true),
+                    GlassTextField(
+                      label: 'Confirm Password',
+                      hintText: '••••••••',
+                      controller: _confirmCtrl,
+                      prefixIcon: Icons.lock_outline_rounded,
+                      isPassword: true,
+                    ),
                     const SizedBox(height: AppSpacing.md20),
                     AppButton(
                       label: isLoading ? 'Creating Account...' : 'Sign Up',
@@ -99,25 +127,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _field(String hint, IconData icon, TextEditingController ctrl, {bool obscure = false}) {
-    return ClipRRect(
-      borderRadius: AppBorderRadius.md,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: TextField(
-          controller: ctrl,
-          obscureText: obscure, style: AppTextStyles.bodyM,
-          decoration: InputDecoration(
-            hintText: hint, prefixIcon: Icon(icon, color: AppColors.textHint, size: 20),
-            filled: true, fillColor: Colors.white.withValues(alpha: 0.5),
-            border: OutlineInputBorder(borderRadius: AppBorderRadius.md, borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3))),
-            enabledBorder: OutlineInputBorder(borderRadius: AppBorderRadius.md, borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3))),
           ),
         ),
       ),

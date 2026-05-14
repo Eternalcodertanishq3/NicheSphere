@@ -11,6 +11,7 @@ import '../../../shared/widgets/gradient_background.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/avatar_widget.dart';
 import '../../../shared/widgets/app_bottom_nav.dart';
+import '../../../shared/widgets/app_back_button.dart';
 import '../../../shared/widgets/loading_shimmer.dart';
 import '../providers/profile_provider.dart';
 
@@ -79,19 +80,24 @@ class ProfileScreen extends ConsumerWidget {
   Widget _header(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg24),
     child: Row(children: [
-      GestureDetector(onTap: () => context.go(RouteNames.home), child: const Icon(Icons.arrow_back_rounded)),
+      AppBackButton(onTap: () => context.go(RouteNames.home)),
       const Spacer(),
       GlassCard(blur: 10, opacity: 0.2, borderRadius: AppBorderRadius.pill,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        onTap: () => context.go(RouteNames.editProfile),
+        onTap: () => context.push(RouteNames.editProfile),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           const Icon(Icons.edit_rounded, size: 16, color: AppColors.textSecondary),
           const SizedBox(width: 4),
           Text('Edit', style: AppTextStyles.label.copyWith(color: AppColors.textSecondary)),
         ])),
       const SizedBox(width: 8),
-      GestureDetector(onTap: () => context.go(RouteNames.settings),
-        child: const Icon(Icons.settings_outlined, color: AppColors.textSecondary)),
+      GestureDetector(onTap: () => context.push(RouteNames.settings),
+        child: GlassCard(
+          padding: const EdgeInsets.all(8),
+          borderRadius: BorderRadius.circular(12),
+          opacity: 0.1,
+          child: const Icon(Icons.settings_outlined, color: AppColors.textSecondary, size: 24),
+        )),
     ]),
   ).animate().fadeIn();
 
@@ -141,7 +147,7 @@ class ProfileScreen extends ConsumerWidget {
     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg24),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [Text('Badges', style: AppTextStyles.titleL), const Spacer(),
-        GestureDetector(onTap: () => context.go(RouteNames.badges),
+        GestureDetector(onTap: () => context.push(RouteNames.badges),
           child: Text('View All', style: AppTextStyles.label.copyWith(color: AppColors.neonPink)))]),
       const SizedBox(height: AppSpacing.sm12),
       SingleChildScrollView(

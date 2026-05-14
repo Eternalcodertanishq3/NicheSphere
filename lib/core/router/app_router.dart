@@ -29,45 +29,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   // This is the key to preventing the "Redirect loop detected" error
   final router = GoRouter(
     initialLocation: RouteNames.splash,
-    redirect: (context, state) {
-      final authState = ref.read(authStateProvider);
-      
-      // If auth is still loading, stay on Splash
-      if (authState.isLoading) return null;
-
-      final isLoggedIn = authState.value != null;
-      final isOnboarded = Hive.box('settings')
-          .get('onboarding_complete', defaultValue: false) as bool;
-      final currentPath = state.matchedLocation;
-
-      // Define our route groups
-      final isAuthPath = currentPath == RouteNames.welcome ||
-          currentPath == RouteNames.login ||
-          currentPath == RouteNames.register;
-      
-      final isOnboardingPath = currentPath == RouteNames.interestSelector ||
-          currentPath == RouteNames.locationPermission ||
-          currentPath == RouteNames.notificationPermission;
-
-      // 1. Not Logged In?
-      if (!isLoggedIn) {
-        if (isAuthPath) return null;
-        return RouteNames.welcome;
-      }
-
-      // 2. Logged In but Not Onboarded?
-      if (!isOnboarded) {
-        if (isOnboardingPath) return null;
-        return RouteNames.interestSelector;
-      }
-
-      // 3. Logged In and Fully Onboarded?
-      if (isAuthPath || isOnboardingPath || currentPath == RouteNames.welcome || currentPath == RouteNames.splash) {
-        return RouteNames.home;
-      }
-
-      return null;
-    },
+    redirect: (context, state) => AuthGuard.handle(ref, state),
     routes: [
       GoRoute(
         path: RouteNames.splash,
@@ -214,4 +176,55 @@ CustomTransitionPage _buildPage(GoRouterState state, Widget child) {
       );
     },
   );
+}
+
+/// NicheSphere — AuthGuard helper for centralizing redirection logic.
+class AuthGuard {
+  static String? handle(Ref ref, GoRouterState state) {
+    final authState = ref.read(authStateProvider);
+
+    // If auth is still loading, stay on Splash
+    if (authState.isLoading) return null;
+
+    final isLoggedIn = authState.value != null;
+
+    // Safe box access: check if open, otherwise return null (will try again next tick)
+    if (!Hive.isBoxOpen('settings')) return null;
+
+    final isOnboarded = Hive.box('settings')
+        .get('onboarding_complete', defaultValue: false) as bool;
+    final currentPath = state.matchedLocation;
+
+    // Define our route groups
+    final isAuthPath = currentPath == RouteNames.welcome ||
+        currentPath == RouteNames.login ||
+        currentPath == RouteNames.register;
+
+    final isOnboardingPath = currentPath == RouteNames.interestSelector ||
+        currentPath == RouteNames.locationPermission ||
+        currentPath == RouteNames.notificationPermission;
+
+    // 1. Not Logged In?
+    if (!isLoggedIn) {
+      if (isAuthPath) return null;
+      return RouteNames.welcome;
+    }
+
+    // 2. Logged In but Not Onboarded?
+    if (!isOnboarded) {
+      if (isOnboardingPath) return null;
+      return RouteNames.interestSelector;
+    }
+
+    // 3. Logged In and Fully Onboarded?
+    // If they are on Auth/Onboarding/Splash/Welcome screens, send them Home.
+    if (isAuthPath ||
+        isOnboardingPath ||
+        currentPath == RouteNames.welcome ||
+        currentPath == RouteNames.splash) {
+      return RouteNames.home;
+    }
+
+    return null;
+  }
 }

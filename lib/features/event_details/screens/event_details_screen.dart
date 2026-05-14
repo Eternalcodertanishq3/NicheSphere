@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +11,7 @@ import '../../../core/theme/app_border_radius.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/avatar_widget.dart';
+import '../../../shared/widgets/app_back_button.dart';
 import '../../../shared/widgets/loading_shimmer.dart';
 import '../providers/event_details_provider.dart';
 
@@ -48,9 +48,17 @@ class EventDetailsScreen extends ConsumerWidget {
                     gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter,
                       colors: [Colors.black.withValues(alpha: 0.4), Colors.transparent])))),
                 Positioned(top: MediaQuery.of(context).viewPadding.top + 8, left: 16,
-                  child: _glassCircle(Icons.arrow_back_rounded, () => context.pop())),
+                  child: const AppBackButton(iconColor: Colors.white)),
                 Positioned(top: MediaQuery.of(context).viewPadding.top + 8, right: 16,
-                  child: _glassCircle(Icons.share_rounded, () {})),
+                  child: GestureDetector(
+                    onTap: () {},
+                    child: GlassCard(
+                      padding: const EdgeInsets.all(8),
+                      borderRadius: BorderRadius.circular(12),
+                      opacity: 0.1,
+                      child: const Icon(Icons.share_rounded, color: Colors.white, size: 24),
+                    ),
+                  )),
               ])),
               SliverToBoxAdapter(
                 child: Transform.translate(offset: const Offset(0, -40),
@@ -148,15 +156,6 @@ class EventDetailsScreen extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  Widget _glassCircle(IconData icon, VoidCallback onTap) {
-    return GestureDetector(onTap: onTap,
-      child: ClipOval(child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(width: 40, height: 40,
-          decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.2),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.3))),
-          child: Icon(icon, color: Colors.white, size: 20)))));
   }
 
   Widget _infoPill(IconData icon, String text, {String? avatar}) {

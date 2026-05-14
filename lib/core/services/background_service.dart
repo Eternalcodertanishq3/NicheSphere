@@ -1,40 +1,52 @@
-import 'package:workmanager/workmanager.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:flutter/foundation.dart';
+import 'package:workmanager/workmanager.dart';
+import '../config/firebase_options.dart';
 
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
     try {
-      await Firebase.initializeApp();
+      // 1. Safe Firebase Initialization
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
       
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(accuracy: LocationAccuracy.medium),
       );
-      // Use position in future geo-queries
-      debugPrint('Polled location: ${position.latitude}, ${position.longitude}');
+      
+      debugPrint('Background Polled location: ${position.latitude}, ${position.longitude}');
 
-      // Simulated query to find "Hot Spheres" based on current location
       final snapshot = await FirebaseFirestore.instance
           .collection('events')
           .where('startAt', isGreaterThan: DateTime.now())
           .limit(10)
           .get();
 
-      // For MVP, if we find any nearby upcoming events, fire notification.
       if (snapshot.docs.isNotEmpty) {
         final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
             FlutterLocalNotificationsPlugin();
         
+        // 2. Multi-platform Notification Settings
         const AndroidInitializationSettings initializationSettingsAndroid =
             AndroidInitializationSettings('@mipmap/ic_launcher');
-        const InitializationSettings initializationSettings =
-            InitializationSettings(android: initializationSettingsAndroid);
+        const DarwinInitializationSettings initializationSettingsDarwin =
+            DarwinInitializationSettings(
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
         
-        await flutterLocalNotificationsPlugin.initialize(settings: initializationSettings);
+        const InitializationSettings initializationSettings = InitializationSettings(
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsDarwin,
+        );
+        
+        await flutterLocalNotificationsPlugin.initialize(
+          settings: initializationSettings,
+        );
 
         const AndroidNotificationDetails androidPlatformChannelSpecifics =
             AndroidNotificationDetails(
@@ -43,21 +55,20 @@ void callbackDispatcher() {
           channelDescription: 'Notifications for high event density areas',
           importance: Importance.max,
           priority: Priority.high,
-          ticker: 'ticker',
         );
         const NotificationDetails platformChannelSpecifics =
             NotificationDetails(android: androidPlatformChannelSpecifics);
         
         await flutterLocalNotificationsPlugin.show(
           id: 0,
-          title: 'You just entered a Hot Sphere! 🔥',
-          body: '${snapshot.docs.length} upcoming events near your current location. Tap to discover.',
+          title: 'Hot Sphere Nearby! 🔥',
+          body: 'Found ${snapshot.docs.length} events near you. Tap to explore!',
           notificationDetails: platformChannelSpecifics,
-          payload: 'hot_sphere',
         );
       }
       return Future.value(true);
     } catch (err) {
+      debugPrint('Background task error: $err');
       return Future.value(false);
     }
   });
@@ -65,18 +76,18 @@ void callbackDispatcher() {
 
 class BackgroundService {
   static Future<void> initialize() async {
-    await Workmanager().initialize(
-      callbackDispatcher,
-    );
+    await Workmanager().initialize(callbackDispatcher);
   }
 
   static void registerGeofenceTask() {
     Workmanager().registerPeriodicTask(
-      "1",
+      "geofence_task",
       "geofence_hot_sphere_check",
-      frequency: const Duration(minutes: 15),
+      // 3. Increased interval to 1 hour to save battery
+      frequency: const Duration(hours: 1),
       constraints: Constraints(
         networkType: NetworkType.connected,
+        requiresBatteryNotLow: true,
       ),
     );
   }

@@ -27,6 +27,9 @@ import '../../domain/usecases/user_usecases.dart';
 import '../../domain/usecases/community_usecases.dart';
 import '../../domain/usecases/chat_usecases.dart';
 
+// ── Firebase ────────────────────────────────────────
+final firebaseAuthProvider = Provider<FirebaseAuth>((ref) => FirebaseAuth.instance);
+
 // ── Services ────────────────────────────────────────
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 final analyticsServiceProvider =
@@ -40,7 +43,7 @@ final notificationServiceProvider =
 
 // ── Firebase Auth stream ─────────────────────────────
 final authStateProvider = StreamProvider<User?>((ref) {
-  return ref.watch(authServiceProvider).authStateChanges;
+  return ref.watch(firebaseAuthProvider).authStateChanges();
 });
 
 // ── Datasources ──────────────────────────────────────
@@ -60,7 +63,7 @@ final eventRepositoryProvider = Provider<EventRepository>((ref) {
   return EventRepositoryImpl(
     ref.watch(eventRemoteDsProvider),
     ref.watch(eventLocalDsProvider),
-    FirebaseAuth.instance,
+    ref.watch(firebaseAuthProvider),
   );
 });
 

@@ -68,6 +68,31 @@ class _GlassCardState extends State<GlassCard>
   Widget build(BuildContext context) {
     final radius = widget.borderRadius ?? AppBorderRadius.lg;
 
+    final blurValue = widget.blur;
+    final content = Container(
+      padding: widget.padding,
+      decoration: BoxDecoration(
+        color: (widget.tintColor ?? Colors.white)
+            .withValues(alpha: widget.opacity),
+        borderRadius: radius,
+        border: Border.all(
+          color: Colors.white.withValues(alpha: widget.borderOpacity),
+          width: 1.5,
+        ),
+        boxShadow: widget.glowColor != null
+            ? [
+                BoxShadow(
+                  color: widget.glowColor!
+                      .withValues(alpha: widget.glowIntensity),
+                  blurRadius: 20,
+                  spreadRadius: 0,
+                ),
+              ]
+            : null,
+      ),
+      child: widget.child,
+    );
+
     return GestureDetector(
       onTap: widget.onTap,
       onTapDown: widget.onTap != null ? (_) => _scaleController.forward() : null,
@@ -81,35 +106,15 @@ class _GlassCardState extends State<GlassCard>
         ),
         child: ClipRRect(
           borderRadius: radius,
-          child: BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: widget.blur,
-              sigmaY: widget.blur,
-            ),
-            child: Container(
-              padding: widget.padding,
-              decoration: BoxDecoration(
-                color: (widget.tintColor ?? Colors.white)
-                    .withValues(alpha: widget.opacity),
-                borderRadius: radius,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: widget.borderOpacity),
-                  width: 1.5,
-                ),
-                boxShadow: widget.glowColor != null
-                    ? [
-                        BoxShadow(
-                          color: widget.glowColor!
-                              .withValues(alpha: widget.glowIntensity),
-                          blurRadius: 20,
-                          spreadRadius: 0,
-                        ),
-                      ]
-                    : null,
-              ),
-              child: widget.child,
-            ),
-          ),
+          child: blurValue > 0
+              ? BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: blurValue,
+                    sigmaY: blurValue,
+                  ),
+                  child: content,
+                )
+              : content,
         ),
       ),
     );

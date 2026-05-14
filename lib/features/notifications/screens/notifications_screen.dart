@@ -8,6 +8,7 @@ import '../../../core/theme/app_border_radius.dart';
 import '../../../core/router/route_names.dart';
 import '../../../shared/widgets/gradient_background.dart';
 import '../../../shared/widgets/glass_card.dart';
+import '../../../shared/widgets/app_back_button.dart';
 
 /// NicheSphere — Notifications Screen (Screen 16)
 class NotificationsScreen extends StatelessWidget {
@@ -30,7 +31,7 @@ class NotificationsScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(AppSpacing.lg24),
               child: Row(children: [
-                GestureDetector(onTap: () => context.go(RouteNames.home), child: const Icon(Icons.arrow_back_rounded)),
+                AppBackButton(onTap: () => context.go(RouteNames.home)),
                 const SizedBox(width: AppSpacing.sm12),
                 Text('Notifications', style: AppTextStyles.displayL),
                 const Spacer(),

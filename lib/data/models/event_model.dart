@@ -1,4 +1,9 @@
-/// NicheSphere — Event Model (Section 4)
+import 'package:flutter/foundation.dart' show immutable;
+
+enum EventStatus { upcoming, live, ended, cancelled }
+enum EventVisibility { public, friendsOnly, private }
+
+@immutable
 class EventModel {
   final String id;
   final String title;
@@ -65,29 +70,35 @@ class EventModel {
   });
 
   factory EventModel.fromJson(Map<String, dynamic> json) {
+    DateTime parseDate(dynamic date) {
+      if (date == null) return DateTime.now();
+      if (date is String) return DateTime.tryParse(date) ?? DateTime.now();
+      return DateTime.now();
+    }
+
     return EventModel(
-      id: json['id'] as String? ?? '',
-      title: json['title'] as String? ?? '',
-      description: json['description'] as String? ?? '',
-      category: json['category'] as String? ?? '',
-      tags: List<String>.from(json['tags'] ?? []),
-      startAt: DateTime.parse(json['startAt'] as String),
-      endAt: DateTime.parse(json['endAt'] as String),
-      locationName: json['locationName'] as String? ?? '',
-      locationAddress: json['locationAddress'] as String? ?? '',
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      category: json['category']?.toString() ?? '',
+      tags: json['tags'] is List ? List<String>.from(json['tags']) : [],
+      startAt: parseDate(json['startAt']),
+      endAt: parseDate(json['endAt']),
+      locationName: json['locationName']?.toString() ?? '',
+      locationAddress: json['locationAddress']?.toString() ?? '',
       latitude: (json['latitude'] as num?)?.toDouble() ?? 0,
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0,
-      imageUrl: json['imageUrl'] as String? ?? '',
-      imageUrls: List<String>.from(json['imageUrls'] ?? []),
-      attendeeCount: json['attendeeCount'] as int? ?? 0,
-      maxAttendees: json['maxAttendees'] as int? ?? 0,
+      imageUrl: json['imageUrl']?.toString() ?? '',
+      imageUrls: json['imageUrls'] is List ? List<String>.from(json['imageUrls']) : [],
+      attendeeCount: (json['attendeeCount'] as num?)?.toInt() ?? 0,
+      maxAttendees: (json['maxAttendees'] as num?)?.toInt() ?? 0,
       isFree: json['isFree'] as bool? ?? true,
       price: (json['price'] as num?)?.toDouble(),
-      currency: json['currency'] as String? ?? 'USD',
-      organizerId: json['organizerId'] as String? ?? '',
-      organizerName: json['organizerName'] as String? ?? '',
-      organizerAvatarUrl: json['organizerAvatarUrl'] as String?,
-      communityId: json['communityId'] as String?,
+      currency: json['currency']?.toString() ?? 'USD',
+      organizerId: json['organizerId']?.toString() ?? '',
+      organizerName: json['organizerName']?.toString() ?? '',
+      organizerAvatarUrl: json['organizerAvatarUrl']?.toString(),
+      communityId: json['communityId']?.toString(),
       status: EventStatus.values.firstWhere(
         (e) => e.name == json['status'],
         orElse: () => EventStatus.upcoming,
@@ -96,12 +107,12 @@ class EventModel {
         (e) => e.name == json['visibility'],
         orElse: () => EventVisibility.public,
       ),
-      coHostIds: List<String>.from(json['coHostIds'] ?? []),
+      coHostIds: json['coHostIds'] is List ? List<String>.from(json['coHostIds']) : [],
       avgRating: (json['avgRating'] as num?)?.toDouble() ?? 0,
-      reviewCount: json['reviewCount'] as int? ?? 0,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 0,
+      createdAt: parseDate(json['createdAt']),
       isFeatured: json['isFeatured'] as bool? ?? false,
-      liveStreamUrl: json['liveStreamUrl'] as String?,
+      liveStreamUrl: json['liveStreamUrl']?.toString(),
     );
   }
 
@@ -205,5 +216,3 @@ class EventModel {
   }
 }
 
-enum EventStatus { upcoming, live, ended, cancelled }
-enum EventVisibility { public, friendsOnly, private }
